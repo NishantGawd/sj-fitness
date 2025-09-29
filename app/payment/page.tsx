@@ -68,12 +68,33 @@ const plans = [
   },
 ]
 
+type FormField =
+  | "firstName"
+  | "lastName"
+  | "email"
+  | "phone"
+  | "branch"
+  | "cardNumber"
+  | "expiryDate"
+  | "cvv"
+  | "cardName"
+
 export default function PaymentPage() {
   const [selectedPlan, setSelectedPlan] = useState<string>("pro")
   const [paymentMethod, setPaymentMethod] = useState<string>("card")
   const [currentStep, setCurrentStep] = useState<number>(1)
   const [isProcessing, setIsProcessing] = useState<boolean>(false)
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    firstName: string
+    lastName: string
+    email: string
+    phone: string
+    branch: string
+    cardNumber: string
+    expiryDate: string
+    cvv: string
+    cardName: string
+  }>({
     firstName: "",
     lastName: "",
     email: "",
@@ -89,7 +110,7 @@ export default function PaymentPage() {
   const plan = plans.find((p) => p.id === selectedPlan) || plans[1]
   const savings = Number.parseInt(plan.originalPrice) - Number.parseInt(plan.price)
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: FormField, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
@@ -102,8 +123,8 @@ export default function PaymentPage() {
   }
 
   const isFormValid = () => {
-    const requiredFields = ["firstName", "lastName", "email", "phone", "branch"]
-    const paymentFields = paymentMethod === "card" ? ["cardNumber", "expiryDate", "cvv", "cardName"] : []
+    const requiredFields: FormField[] = ["firstName", "lastName", "email", "phone", "branch"]
+    const paymentFields: FormField[] = paymentMethod === "card" ? ["cardNumber", "expiryDate", "cvv", "cardName"] : []
 
     return [...requiredFields, ...paymentFields].every((field) => formData[field].trim() !== "")
   }
