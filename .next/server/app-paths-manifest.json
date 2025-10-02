@@ -1,8 +1,22 @@
 {
-  "/membership/page": "app/membership/page.js",
-  "/page": "app/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/cron/reminders/route": "app/api/cron/reminders/route.js",
+  "/about/page": "app/about/page.js",
+  "/api/email/day-pass/route": "app/api/email/day-pass/route.js",
+  "/api/email/one-time/route": "app/api/email/one-time/route.js",
+  "/api/razorpay/order/route": "app/api/razorpay/order/route.js",
   "/api/razorpay/subscription/route": "app/api/razorpay/subscription/route.js",
+  "/api/webhooks/razorpay/route": "app/api/webhooks/razorpay/route.js",
+  "/cancel/page": "app/cancel/page.js",
   "/api/email/membership/route": "app/api/email/membership/route.js",
+  "/contact/page": "app/contact/page.js",
+  "/classes/page": "app/classes/page.js",
+  "/join/page": "app/join/page.js",
   "/api/razorpay/verify/route": "app/api/razorpay/verify/route.js",
-  "/payment/page": "app/payment/page.js"
+  "/membership/page": "app/membership/page.js",
+  "/privacy/page": "app/privacy/page.js",
+  "/terms/page": "app/terms/page.js",
+  "/page": "app/page.js",
+  "/payment/page": "app/payment/page.js",
+  "/api/trial/route": "app/api/trial/route.js"
 }

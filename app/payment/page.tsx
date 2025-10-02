@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useMemo, useState, useEffect } from "react"
+import { useCallback, useMemo, useState, useEffect, Suspense } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 import { Building2, Check, CreditCard, Shield, Star, Wallet } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -52,7 +52,7 @@ function validateForm(form: Record<string, string>) {
   return { emailValid, phoneValid, namesValid, branchValid, overall }
 }
 
-export default function PaymentPage() {
+function PaymentForm() {
   const [currentStep, setCurrentStep] = useState<1 | 2>(1)
   const [selectedPlan, setSelectedPlan] = useState<PlanId>("1m")
   const [payMode, setPayMode] = useState<PayMode>("subscription")
@@ -719,5 +719,13 @@ export default function PaymentPage() {
         </AnimatePresence>
       </div>
     </div>
+  )
+}
+
+export default function PaymentPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><p>Loading payment page...</p></div>}>
+      <PaymentForm />
+    </Suspense>
   )
 }
