@@ -149,6 +149,7 @@ function PaymentForm() {
             color: getComputedStyle(document.documentElement).getPropertyValue("--primary")?.trim() || "#111111",
           },
           handler: async (resp: any) => {
+            const fullName = `${form.firstName} ${form.lastName}`.trim();
             const verify = await fetch("/api/razorpay/verify", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -158,9 +159,13 @@ function PaymentForm() {
                   razorpay_order_id: data.orderId,
                   razorpay_payment_id: resp.razorpay_payment_id,
                   razorpay_signature: resp.razorpay_signature,
-                  userEmail: form.email,
+                  name: fullName,
+                  email: form.email,
+                  phone: form.phone,
                   planName: selected.name,
                   planId: selectedPlan,
+                  amount: Number(selected.price),
+                  notes: { branch: form.branch }
                 },
               }),
             });
@@ -250,6 +255,7 @@ function PaymentForm() {
             color: getComputedStyle(document.documentElement).getPropertyValue("--primary")?.trim() || "#111111",
           },
           handler: async (resp: any) => {
+            const fullName = `${form.firstName} ${form.lastName}`.trim();
             const verify = await fetch("/api/razorpay/verify", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -259,9 +265,13 @@ function PaymentForm() {
                   razorpay_subscription_id: data.subscriptionId,
                   razorpay_payment_id: resp.razorpay_payment_id,
                   razorpay_signature: resp.razorpay_signature,
-                  userEmail: form.email,
+                  name: fullName,
+                  email: form.email,
+                  phone: form.phone,
                   planName: selected.name,
                   planId: selectedPlan,
+                  amount: Number(selected.price),
+                  notes: { branch: form.branch }
                 },
               }),
             });
