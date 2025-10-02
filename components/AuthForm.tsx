@@ -5,9 +5,8 @@ import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Mail, Phone, User, ArrowRight, MapPin, Calendar, Clock, CheckCircle } from "lucide-react"
 import Image from "next/image"
+import { useToast } from "@/hooks/use-toast"
 
-
-// Enhanced Input Field Component
 const InputField = ({
   icon: Icon,
   type,
@@ -41,7 +40,6 @@ const InputField = ({
   </motion.div>
 )
 
-// Branch Selection Card Component
 const BranchCard = ({
   title,
   address,
@@ -77,7 +75,6 @@ const BranchCard = ({
         <CheckCircle className="w-6 h-6 text-brand-yellow" />
       </motion.div>
     )}
-
     <div className="flex items-start space-x-3 mb-4">
       <MapPin className={`w-5 h-5 mt-1 ${isSelected ? "text-brand-yellow" : "text-zinc-400"}`} />
       <div>
@@ -85,7 +82,6 @@ const BranchCard = ({
         <p className="text-zinc-400 text-sm mt-1">{address}</p>
       </div>
     </div>
-
     <div className="space-y-2">
       {features.map((feature, index) => (
         <div key={index} className="flex items-center space-x-2">
@@ -97,11 +93,11 @@ const BranchCard = ({
   </motion.div>
 )
 
-// Main Free Trial Form Component
 export default function AuthForm() {
   const [step, setStep] = useState<"branch" | "details" | "success">("branch")
   const [selectedBranch, setSelectedBranch] = useState<string>("")
   const [isLoading, setIsLoading] = useState(false)
+  const { toast } = useToast()
 
   const branches = [
     {
@@ -118,31 +114,45 @@ export default function AuthForm() {
     },
   ]
 
-  const handleBranchSelect = (branchId: string) => {
-    setSelectedBranch(branchId)
-  }
-
-  const handleContinue = () => {
-    if (selectedBranch) {
-      setStep("details")
-    }
-  }
+  const handleBranchSelect = (branchId: string) => setSelectedBranch(branchId)
+  const handleContinue = () => selectedBranch && setStep("details")
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
+    const formData = new FormData(e.currentTarget)
+    const name = String(formData.get("name") || "")
+    const email = String(formData.get("email") || "")
+    const phone = String(formData.get("phone") || "")
+    const date = String(formData.get("preferred-date") || "")
+    const time = String(formData.get("preferred-time") || "")
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-
-    setStep("success")
-    setIsLoading(false)
+    try {
+      const res = await fetch("/api/email/day-pass", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          email,
+          branch: selectedBranch === "vaisali" ? "Vaisali Nagar" : "Gandhi Path",
+          date: date || undefined,
+          qrUrl: undefined,
+          phone,
+          time,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data?.error || "Failed to send email")
+      toast({ title: "Free trial booked!", description: "We’ve emailed your 1‑day pass." })
+      setStep("success")
+    } catch (err: any) {
+      toast({ title: "Could not send email", description: err?.message || "Please try again.", variant: "destructive" })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  const handleBack = () => {
-    setStep("branch")
-  }
-
+  const handleBack = () => setStep("branch")
   const resetForm = () => {
     setStep("branch")
     setSelectedBranch("")
@@ -157,7 +167,6 @@ export default function AuthForm() {
         transition={{ duration: 0.4 }}
       >
         <AnimatePresence mode="wait">
-          {/* Step 1: Branch Selection */}
           {step === "branch" && (
             <motion.div
               key="branch"
@@ -166,7 +175,6 @@ export default function AuthForm() {
               exit={{ opacity: 0, x: 20 }}
               transition={{ duration: 0.3 }}
             >
-              {/* Header */}
               <div className="text-center mb-8">
                 <motion.div
                   initial={{ scale: 0 }}
@@ -174,9 +182,14 @@ export default function AuthForm() {
                   transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
                   className="flex justify-center mb-6"
                 >
-                  <Image src="/logo.png" alt="SJ Fitness Logo" width={80} height={80} className="rounded-full" />
+                  <Image
+                    src="/logo.png"
+                    alt="SJ Fitness Logo"
+                    width={80}
+                    height={80}
+                    className="rounded-full"
+                  />
                 </motion.div>
-
                 <motion.h1
                   className="text-3xl font-bold text-white mb-2"
                   initial={{ opacity: 0, y: 20 }}
@@ -185,7 +198,6 @@ export default function AuthForm() {
                 >
                   Get Your Free Trial
                 </motion.h1>
-
                 <motion.p
                   className="text-zinc-400"
                   initial={{ opacity: 0 }}
@@ -195,8 +207,6 @@ export default function AuthForm() {
                   Choose your preferred SJ Fitness location for a 1-day free trial
                 </motion.p>
               </div>
-
-              {/* Branch Selection */}
               <div className="space-y-4 mb-8">
                 {branches.map((branch, index) => (
                   <motion.div
@@ -213,7 +223,6 @@ export default function AuthForm() {
                   </motion.div>
                 ))}
               </div>
-
               <motion.button
                 type="button"
                 onClick={handleContinue}
@@ -232,7 +241,6 @@ export default function AuthForm() {
             </motion.div>
           )}
 
-          {/* Step 2: User Details Form */}
           {step === "details" && (
             <motion.div
               key="details"
@@ -241,7 +249,6 @@ export default function AuthForm() {
               exit={{ opacity: 0, x: 20 }}
               transition={{ duration: 0.3 }}
             >
-              {/* Header */}
               <div className="text-center mb-8">
                 <motion.div
                   initial={{ scale: 0 }}
@@ -249,9 +256,14 @@ export default function AuthForm() {
                   transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
                   className="flex justify-center mb-6"
                 >
-                  <Image src="/logo.png" alt="SJ Fitness Logo" width={80} height={80} className="rounded-full" />
+                  <Image
+                    src="/logo.png"
+                    alt="SJ Fitness Logo"
+                    width={80}
+                    height={80}
+                    className="rounded-full"
+                  />
                 </motion.div>
-
                 <motion.h1
                   className="text-3xl font-bold text-white mb-2"
                   initial={{ opacity: 0, y: 20 }}
@@ -260,7 +272,6 @@ export default function AuthForm() {
                 >
                   Almost There!
                 </motion.h1>
-
                 <motion.p
                   className="text-zinc-400"
                   initial={{ opacity: 0 }}
@@ -269,17 +280,15 @@ export default function AuthForm() {
                 >
                   Fill in your details to claim your free trial at{" "}
                   <span className="text-brand-yellow font-medium">
-                    {branches.find((b) => b.id === selectedBranch)?.title}
+                    {selectedBranch === "vaisali" ? "SJ Fitness Vaisali Nagar" : "SJ Fitness Gandhi Path"}
                   </span>
                 </motion.p>
               </div>
 
-              {/* Form */}
               <form onSubmit={handleSubmit} className="space-y-6">
                 <InputField icon={User} type="text" placeholder="Full Name" id="name" />
                 <InputField icon={Mail} type="email" placeholder="Email Address" id="email" />
                 <InputField icon={Phone} type="tel" placeholder="Phone Number" id="phone" />
-
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -291,14 +300,13 @@ export default function AuthForm() {
                       type="date"
                       id="preferred-date"
                       name="preferred-date"
-                      required
                       min={new Date().toISOString().split("T")[0]}
+                      required
                       className="w-full bg-zinc-900 border border-zinc-700 rounded-lg py-4 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-brand-yellow/30 focus:border-brand-yellow transition-all duration-200 hover:border-zinc-600"
                     />
                   </div>
                   <p className="text-xs text-zinc-500 mt-2 ml-1">Preferred trial date</p>
                 </motion.div>
-
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -329,7 +337,6 @@ export default function AuthForm() {
                   >
                     Back
                   </motion.button>
-
                   <motion.button
                     type="submit"
                     disabled={isLoading}
@@ -367,7 +374,6 @@ export default function AuthForm() {
             </motion.div>
           )}
 
-          {/* Step 3: Success Message */}
           {step === "success" && (
             <motion.div
               key="success"
@@ -385,7 +391,6 @@ export default function AuthForm() {
               >
                 <CheckCircle className="w-20 h-20 text-brand-yellow" />
               </motion.div>
-
               <motion.h1
                 className="text-3xl font-bold text-white mb-4"
                 initial={{ opacity: 0, y: 20 }}
@@ -394,7 +399,6 @@ export default function AuthForm() {
               >
                 Trial Booked Successfully!
               </motion.h1>
-
               <motion.div
                 className="bg-zinc-900 rounded-lg p-6 mb-8"
                 initial={{ opacity: 0, y: 20 }}
@@ -402,16 +406,9 @@ export default function AuthForm() {
                 transition={{ delay: 0.3 }}
               >
                 <p className="text-zinc-300 mb-4">
-                  Your free trial has been confirmed at{" "}
-                  <span className="text-brand-yellow font-medium">
-                    {branches.find((b) => b.id === selectedBranch)?.title}
-                  </span>
-                </p>
-                <p className="text-sm text-zinc-400">
-                  We&apos;ll send you a confirmation email with all the details and what to bring for your trial session.
+                  Your free trial has been confirmed. We’ve sent details to your email.
                 </p>
               </motion.div>
-
               <motion.button
                 type="button"
                 onClick={resetForm}
@@ -423,17 +420,6 @@ export default function AuthForm() {
               >
                 Book Another Trial
               </motion.button>
-
-              <motion.div
-                className="mt-8"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-              >
-                <p className="text-xs text-zinc-500">
-                  Questions? Contact us at info@sjfitness.com or call +91 98765 43210
-                </p>
-              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>

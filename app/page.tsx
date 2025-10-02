@@ -172,9 +172,8 @@ export default function HomePage() {
                 <Image
                   src={cls.img || "/placeholder.svg"}
                   alt={cls.name}
-                  layout="fill"
-                  objectFit="cover"
-                  className="group-hover:scale-110 transition-transform duration-500"
+                  fill
+                  className="object-cover group-hover:scale-110 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-black/50 group-hover:bg-black/70 transition-colors duration-300 flex items-center justify-center">
                   <h3 className="text-3xl font-extrabold uppercase text-white tracking-widest">{cls.name}</h3>

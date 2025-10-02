@@ -159,9 +159,9 @@ export default function ContactPage() {
                     <div>
                       <h3 className="font-semibold text-lg">Location</h3>
                       <p className="text-muted-foreground">
-                        123 Fitness Street, Malviya Nagar
+                        2nd Floor, Akshardham Chauraha, B1/564A, Chitrakoot
                         <br />
-                        Jaipur, Rajasthan 302017
+                        Jaipur, Rajasthan 302021
                       </p>
                     </div>
                   </motion.div>
@@ -173,7 +173,7 @@ export default function ContactPage() {
                     <Phone className="text-brand-yellow w-6 h-6 mt-1 flex-shrink-0" />
                     <div>
                       <h3 className="font-semibold text-lg">Phone</h3>
-                      <p className="text-muted-foreground">+91 123-456-7890</p>
+                      <p className="text-muted-foreground">+918824249083</p>
                     </div>
                   </motion.div>
 
@@ -198,16 +198,12 @@ export default function ContactPage() {
                 </div>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center py-2 border-b border-border/50">
-                    <span className="font-medium">Monday - Friday</span>
-                    <span className="text-brand-yellow font-semibold">5:00 AM - 11:00 PM</span>
-                  </div>
-                  <div className="flex justify-between items-center py-2 border-b border-border/50">
-                    <span className="font-medium">Saturday</span>
+                    <span className="font-medium">Monday - Saturday</span>
                     <span className="text-brand-yellow font-semibold">6:00 AM - 10:00 PM</span>
                   </div>
                   <div className="flex justify-between items-center py-2">
                     <span className="font-medium">Sunday</span>
-                    <span className="text-brand-yellow font-semibold">8:00 AM - 8:00 PM</span>
+                    <span className="text-brand-yellow font-semibold">6:00 AM - 12:00 PM</span>
                   </div>
                 </div>
               </div>
@@ -215,7 +211,7 @@ export default function ContactPage() {
               {/* Map */}
               <div className="h-80 bg-card rounded-2xl shadow-2xl overflow-hidden border border-border">
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d113941.01166421458!2d75.7099238382349!3d26.88514104996213!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x396c4adf4c57e281%3A0xce1c63a0cf22e09!2sJaipur%2C%20Rajasthan!5e0!3m2!1sen!2sin!4v1727497127111!5m2!1sen!2sin"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d28464.368196956788!2d75.70059647431637!3d26.902034399999998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x396db5bca0344373%3A0x8f244ba5ef75525f!2sSJ%20FITNESS%20GYM%2C%20VAISHALI%20NAGAR!5e0!3m2!1sen!2sin!4v1759387223770!5m2!1sen!2sin"
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}

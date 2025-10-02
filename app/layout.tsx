@@ -4,6 +4,8 @@ import { Poppins } from "next/font/google"
 import "./globals.css"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
+import { Toaster } from "@/components/ui/toaster"
+import { ThemeProvider } from "@/components/theme-provider"
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -25,10 +27,13 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${poppins.variable} dark`}>
+    <html lang="en" className={poppins.variable}>
       <body className="font-sans">
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
         <Header />
         <main className="pt-16">{children}</main>
+        <Toaster />
+        </ThemeProvider>
         <Footer />
       </body>
     </html>

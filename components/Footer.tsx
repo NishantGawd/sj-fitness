@@ -103,6 +103,9 @@ export default function Footer() {
             <Link href="/terms" className="text-gray-500 hover:text-brand-yellow text-sm transition-colors">
               Terms of Service
             </Link>
+            <Link href="/cancel" className="text-gray-500 hover:text-brand-yellow text-sm transition-colors">
+              Cancellation Policy
+            </Link>
           </div>
         </div>
       </div>

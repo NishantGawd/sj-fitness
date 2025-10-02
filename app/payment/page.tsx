@@ -1,9 +1,8 @@
 "use client"
 
-import { useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Check, CreditCard, Smartphone, Building2, Shield, Clock, Star } from "lucide-react"
-import Link from "next/link"
+import { useCallback, useMemo, useState, useEffect } from "react"
+import { AnimatePresence, motion } from "framer-motion"
+import { Building2, Check, CreditCard, Shield, Star, Wallet } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -11,128 +10,352 @@ import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
-import { Badge } from "@/components/ui/badge"
+import { useSearchParams } from "next/navigation"
+import { useToast } from "@/hooks/use-toast"
+import { useRouter } from "next/navigation"
 
-// Membership plans data (imported from membership page)
+declare global {
+  interface Window {
+    Razorpay?: any
+  }
+}
+
+async function loadRazorpay(): Promise<boolean> {
+  if (typeof window === "undefined") return false
+  if (window.Razorpay) return true
+  return new Promise((resolve) => {
+    const script = document.createElement("script")
+    script.src = "https://checkout.razorpay.com/v1/checkout.js"
+    script.async = true
+    script.onload = () => resolve(true)
+    script.onerror = () => resolve(false)
+    document.body.appendChild(script)
+  })
+}
+
 const plans = [
-  {
-    id: "starter",
-    name: "Starter",
-    price: "2999",
-    originalPrice: "3999",
-    period: "/month",
-    description: "Perfect for fitness beginners ready to start their journey.",
-    features: [
-      "Gym Access (Mon-Fri, 6AM-8PM)",
-      "Basic Equipment Access",
-      "2 Group Classes per Week",
-      "Locker Room Access",
-      "Progress Tracking App",
-    ],
-    popular: false,
-  },
-  {
-    id: "pro",
-    name: "Pro",
-    price: "4999",
-    originalPrice: "6999",
-    period: "/month",
-    description: "Most popular choice for serious fitness enthusiasts.",
-    features: [
-      "Everything in Starter, plus:",
-      "24/7 Unlimited Gym Access",
-      "All Premium Group Classes",
-      "1 Personal Training Session/Month",
-      "Sauna & Steam Room",
-      "Guest Pass (2/Month)",
-    ],
-    popular: true,
-  },
-  {
-    id: "elite",
-    name: "Elite",
-    price: "7999",
-    originalPrice: "9999",
-    period: "/month",
-    description: "Ultimate experience for peak performance and luxury.",
-    features: [
-      "Everything in Pro, plus:",
-      "Unlimited Personal Training",
-      "Nutrition Consultation",
-      "Priority Class Booking",
-      "Towel Service & Amenities",
-      "Guest Passes (4/Month)",
-      "VIP Lounge Access",
-    ],
-    popular: false,
-  },
-]
+  { id: "1m", name: "1 Month", price: "3000", description: "Perfect to get started" },
+  { id: "3m", name: "3 Months", price: "6000", description: "Commit to consistency" },
+  { id: "6m", name: "6 Months", price: "9000", description: "Best value mid-term" },
+  { id: "12m", name: "1 Year", price: "13000", description: "Ultimate commitment" },
+] as const
 
-type FormField =
-  | "firstName"
-  | "lastName"
-  | "email"
-  | "phone"
-  | "branch"
-  | "cardNumber"
-  | "expiryDate"
-  | "cvv"
-  | "cardName"
+type PlanId = (typeof plans)[number]["id"]
+type PayMode = "subscription" | "one-time"
+
+function validateForm(form: Record<string, string>) {
+  const emailValid = /\S+@\S+\.\S+/.test(form.email)
+  const phoneValid = /^\+?[0-9]{7,15}$/.test(form.phone.replace(/\s/g, ""))
+  const namesValid = form.firstName.trim().length > 1 && form.lastName.trim().length > 1
+  const branchValid = !!form.branch
+  const overall = emailValid && phoneValid && namesValid && branchValid
+  return { emailValid, phoneValid, namesValid, branchValid, overall }
+}
 
 export default function PaymentPage() {
-  const [selectedPlan, setSelectedPlan] = useState<string>("pro")
-  const [paymentMethod, setPaymentMethod] = useState<string>("card")
-  const [currentStep, setCurrentStep] = useState<number>(1)
-  const [isProcessing, setIsProcessing] = useState<boolean>(false)
-  const [formData, setFormData] = useState<{
-    firstName: string
-    lastName: string
-    email: string
-    phone: string
-    branch: string
-    cardNumber: string
-    expiryDate: string
-    cvv: string
-    cardName: string
-  }>({
+  const [currentStep, setCurrentStep] = useState<1 | 2>(1)
+  const [selectedPlan, setSelectedPlan] = useState<PlanId>("1m")
+  const [payMode, setPayMode] = useState<PayMode>("subscription")
+  const [isStartingCheckout, setIsStartingCheckout] = useState(false)
+  const { toast } = useToast()
+  const router = useRouter()
+
+  const [form, setForm] = useState({
     firstName: "",
     lastName: "",
     email: "",
     phone: "",
     branch: "",
-    cardNumber: "",
-    expiryDate: "",
-    cvv: "",
-    cardName: "",
   })
 
-  // Get selected plan details
-  const plan = plans.find((p) => p.id === selectedPlan) || plans[1]
-  const savings = Number.parseInt(plan.originalPrice) - Number.parseInt(plan.price)
+  const searchParams = useSearchParams()
+  useEffect(() => {
+    const qp = searchParams.get("plan") as PlanId | null
+    if (qp && plans.some((p) => p.id === qp)) {
+      setSelectedPlan(qp)
+    }
+  }, [searchParams])
 
-  const handleInputChange = (field: FormField, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
+  const selected = useMemo(() => plans.find((p) => p.id === selectedPlan)!, [selectedPlan])
+
+  const { emailValid, phoneValid, namesValid, branchValid, overall } = useMemo(() => validateForm(form), [form])
+
+  const handleChange = (key: keyof typeof form, value: string) => {
+    setForm((prev) => ({ ...prev, [key]: value }))
   }
 
-  const handlePayment = async () => {
-    setIsProcessing(true)
-    // Simulate payment processing
-    await new Promise((resolve) => setTimeout(resolve, 3000))
-    setCurrentStep(3)
-    setIsProcessing(false)
-  }
+  const startCheckout = useCallback(async () => {
+    setIsStartingCheckout(true)
+    try {
+      const ok = await loadRazorpay()
+      if (!ok || !window.Razorpay) {
+        toast({
+          title: "Payment unavailable",
+          description: "Razorpay failed to load. Please check your network and try again.",
+          variant: "destructive",
+        })
+        return
+      }
 
-  const isFormValid = () => {
-    const requiredFields: FormField[] = ["firstName", "lastName", "email", "phone", "branch"]
-    const paymentFields: FormField[] = paymentMethod === "card" ? ["cardNumber", "expiryDate", "cvv", "cardName"] : []
+      const fullName = `${form.firstName} ${form.lastName}`.trim()
+      if (!fullName || !form.email || !form.phone || !form.branch) {
+        toast({
+          title: "Missing details",
+          description: "Please fill all details to continue.",
+          variant: "destructive",
+        })
+        return
+      }
 
-    return [...requiredFields, ...paymentFields].every((field) => formData[field].trim() !== "")
-  }
+      if (payMode === "one-time") {
+        const amountInPaise = Number.parseInt(selected.price) * 100
+        const res = await fetch("/api/razorpay/order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            amount: amountInPaise,
+            name: fullName,
+            email: form.email,
+            phone: form.phone,
+            notes: {
+              planId: selectedPlan,
+              branch: form.branch,
+              purpose: "one-time-membership",
+            },
+          }),
+        })
+        const data = await res.json()
+        if (!res.ok) {
+          throw new Error(data?.error || "Failed to start payment")
+        }
+
+        const options = {
+          key: data.keyId,
+          amount: amountInPaise,
+          currency: "INR",
+          name: "SJ Fitness",
+          description: `${selected.name} Membership`,
+          order_id: data.orderId,
+          prefill: {
+            name: fullName,
+            email: form.email,
+            contact: form.phone,
+          },
+          notes: {
+            planId: selectedPlan,
+            branch: form.branch,
+          },
+          theme: {
+            color: getComputedStyle(document.documentElement).getPropertyValue("--primary")?.trim() || "#111111",
+          },
+          handler: async (resp: any) => {
+            const verify = await fetch("/api/razorpay/verify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                type: "order",
+                payload: {
+                  razorpay_order_id: data.orderId,
+                  razorpay_payment_id: resp.razorpay_payment_id,
+                  razorpay_signature: resp.razorpay_signature,
+                  userEmail: form.email,
+                  planName: selected.name,
+                  planId: selectedPlan,
+                },
+              }),
+            });
+            const v = await verify.json()
+            if (v.valid) {
+              toast({ title: "Payment successful", description: "Your membership has been activated." })
+              fetch("/api/email/one-time", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  name: fullName,
+                  email: form.email,
+                  planId: selectedPlan,
+                  planName: selected.name,
+                  amount: Number(selected.price),
+                  branch: form.branch,
+                  orderId: data.orderId,
+                  paymentId: resp.razorpay_payment_id,
+                  mode: "one-time",
+                }),
+              })
+                .then((r) => r.json())
+                .then(() =>
+                  toast({ title: "Receipt emailed", description: "A confirmation has been sent to your inbox." }),
+                )
+                .catch(() =>
+                  toast({
+                    title: "Email not sent",
+                    description: "We couldn't send the email right now.",
+                    variant: "destructive",
+                  }),
+                )
+              setCurrentStep(2)
+              setTimeout(() => router.push("/"), 1200)
+            } else {
+              toast({
+                title: "Verification failed",
+                description: "We could not verify the payment signature.",
+                variant: "destructive",
+              })
+            }
+          },
+          modal: {
+            ondismiss: () => {
+              toast({ title: "Payment cancelled", description: "You closed the payment window." })
+            },
+          },
+        }
+
+        const rzp = new window.Razorpay(options)
+        rzp.open()
+        setCurrentStep(2)
+      } else {
+        const res = await fetch("/api/razorpay/subscription", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            duration: selectedPlan,
+            name: `${form.firstName} ${form.lastName}`.trim(),
+            email: form.email,
+            phone: form.phone,
+            notes: {
+              branch: form.branch,
+            },
+          }),
+        })
+        const data = await res.json()
+        if (!res.ok) {
+          throw new Error(data?.error || "Failed to start subscription")
+        }
+
+        const options = {
+          key: data.keyId,
+          name: "SJ Fitness",
+          description: `${selected.name} Membership (Subscription)`,
+          subscription_id: data.subscriptionId,
+          prefill: {
+            name: `${form.firstName} ${form.lastName}`.trim(),
+            email: form.email,
+            contact: form.phone,
+          },
+          notes: {
+            duration: selectedPlan,
+            branch: form.branch,
+          },
+          theme: {
+            color: getComputedStyle(document.documentElement).getPropertyValue("--primary")?.trim() || "#111111",
+          },
+          handler: async (resp: any) => {
+            const verify = await fetch("/api/razorpay/verify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                type: "subscription",
+                payload: {
+                  razorpay_subscription_id: data.subscriptionId,
+                  razorpay_payment_id: resp.razorpay_payment_id,
+                  razorpay_signature: resp.razorpay_signature,
+                  userEmail: form.email,
+                  planName: selected.name,
+                  planId: selectedPlan,
+                },
+              }),
+            });
+            const v = await verify.json()
+            if (v.valid) {
+              toast({ title: "Subscription active", description: "Your membership subscription is active." })
+              fetch("/api/email/membership", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  name: `${form.firstName} ${form.lastName}`.trim(),
+                  email: form.email,
+                  planId: selectedPlan,
+                  planName: selected.name,
+                  amount: Number(selected.price),
+                  branch: form.branch,
+                  mode: "subscription",
+                  subscriptionId: data.subscriptionId,
+                  paymentId: resp.razorpay_payment_id,
+                }),
+              })
+                .then((r) => r.json())
+                .then(() =>
+                  toast({ title: "Receipt emailed", description: "A confirmation has been sent to your inbox." }),
+                )
+                .catch(() =>
+                  toast({
+                    title: "Email not sent",
+                    description: "We couldn't send the email right now.",
+                    variant: "destructive",
+                  }),
+                )
+              setCurrentStep(2)
+              setTimeout(() => router.push("/"), 1200)
+            } else {
+              toast({
+                title: "Verification failed",
+                description: "We could not verify the subscription payment.",
+                variant: "destructive",
+              })
+            }
+          },
+          modal: {
+            ondismiss: () => {
+              toast({ title: "Checkout closed", description: "You closed the subscription window." })
+            },
+          },
+        }
+
+        const rzp = new window.Razorpay(options)
+        rzp.open()
+        setCurrentStep(2)
+      }
+    } catch (e: any) {
+      console.error("[v0] startCheckout error:", e)
+      toast({
+        title: "Something went wrong",
+        description: e?.message || "Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsStartingCheckout(false)
+    }
+  }, [form, selectedPlan, payMode, selected.price, toast])
 
   return (
     <div className="min-h-screen bg-background">
-
       <div className="container mx-auto px-4 py-8 max-w-6xl">
+        <div className="mb-8">
+          <div className="flex items-center gap-3 text-sm">
+            <div
+              className={`flex items-center gap-2 ${currentStep === 1 ? "text-foreground" : "text-muted-foreground"}`}
+            >
+              <div
+                className={`w-6 h-6 rounded-full flex items-center justify-center font-bold ${currentStep >= 1 ? "bg-brand-yellow text-black" : "bg-muted text-foreground"}`}
+              >
+                1
+              </div>
+              <span>Details</span>
+            </div>
+            <div className="h-px flex-1 bg-border" />
+            <div
+              className={`flex items-center gap-2 ${currentStep === 2 ? "text-foreground" : "text-muted-foreground"}`}
+            >
+              <div
+                className={`w-6 h-6 rounded-full flex items-center justify-center font-bold ${currentStep >= 2 ? "bg-brand-yellow text-black" : "bg-muted text-foreground"}`}
+              >
+                2
+              </div>
+              <span>Payment</span>
+            </div>
+          </div>
+        </div>
+
         <AnimatePresence mode="wait">
           {currentStep === 1 && (
             <motion.div
@@ -140,17 +363,18 @@ export default function PaymentPage() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.25 }}
               className="grid lg:grid-cols-2 gap-8"
             >
-              {/* Left Column - Plan Selection & Details */}
               <div className="space-y-6">
                 <div>
                   <h1 className="text-3xl font-bold mb-2">Complete Your Membership</h1>
-                  <p className="text-muted-foreground">Join SJ Fitness and start your transformation journey today.</p>
+                  <p className="text-muted-foreground">
+                    Choose your plan and payment type. Pay securely with Card, and for one-time payments, UPI is
+                    available.
+                  </p>
                 </div>
 
-                {/* Plan Selection */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -158,38 +382,70 @@ export default function PaymentPage() {
                       Select Your Plan
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <RadioGroup value={selectedPlan} onValueChange={setSelectedPlan} className="space-y-4">
-                      {plans.map((planOption) => (
-                        <div
-                          key={planOption.id}
-                          className="flex items-center space-x-3 p-4 rounded-lg border border-border hover:border-brand-yellow/50 transition-colors"
+                  <CardContent className="grid gap-3">
+                    <RadioGroup
+                      value={selectedPlan}
+                      onValueChange={(v) => setSelectedPlan(v as PlanId)}
+                      className="grid gap-3"
+                    >
+                      {plans.map((p) => (
+                        <label
+                          key={p.id}
+                          htmlFor={`plan-${p.id}`}
+                          className={`flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-all duration-200 ${selectedPlan === p.id ? "border-brand-yellow ring-2 ring-brand-yellow/30 scale-[1.01]" : "border-border hover:border-brand-yellow/50"}`}
                         >
-                          <RadioGroupItem value={planOption.id} id={planOption.id} />
+                          <RadioGroupItem id={`plan-${p.id}`} value={p.id} />
                           <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <Label htmlFor={planOption.id} className="font-semibold">
-                                {planOption.name}
-                              </Label>
-                              {planOption.popular && <Badge className="bg-brand-yellow text-black">Most Popular</Badge>}
+                            <div className="flex items-center justify-between">
+                              <span className="font-semibold">{p.name}</span>
+                              <span className="text-2xl font-bold">₹{p.price}</span>
                             </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-2xl font-bold">₹{planOption.price}</span>
-                              <span className="text-sm text-muted-foreground line-through">
-                                ₹{planOption.originalPrice}
-                              </span>
-                              <span className="text-sm text-green-500 font-medium">
-                                Save ₹{Number.parseInt(planOption.originalPrice) - Number.parseInt(planOption.price)}
-                              </span>
-                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">{p.description}</p>
                           </div>
-                        </div>
+                        </label>
                       ))}
                     </RadioGroup>
                   </CardContent>
                 </Card>
 
-                {/* Branch Selection */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Wallet className="w-5 h-5 text-brand-yellow" />
+                      Payment Type
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="grid gap-3">
+                    <RadioGroup value={payMode} onValueChange={(v) => setPayMode(v as PayMode)} className="grid gap-3">
+                      <label
+                        htmlFor="pay-subscription"
+                        className={`flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${payMode === "subscription" ? "border-brand-yellow" : "border-border hover:border-brand-yellow/50"}`}
+                      >
+                        <RadioGroupItem id="pay-subscription" value="subscription" />
+                        <div className="flex-1">
+                          <div className="font-semibold">Monthly Subscription</div>
+                          <p className="text-xs text-muted-foreground">
+                            Best for ongoing membership. Card payments only for recurring in India.
+                          </p>
+                        </div>
+                      </label>
+
+                      <label
+                        htmlFor="pay-onetime"
+                        className={`flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${payMode === "one-time" ? "border-brand-yellow" : "border-border hover:border-brand-yellow/50"}`}
+                      >
+                        <RadioGroupItem id="pay-onetime" value="one-time" />
+                        <div className="flex-1">
+                          <div className="font-semibold">One-Time Payment</div>
+                          <p className="text-xs text-muted-foreground">
+                            Pay once for the selected month. Supports Card and UPI.
+                          </p>
+                        </div>
+                      </label>
+                    </RadioGroup>
+                  </CardContent>
+                </Card>
+
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -198,8 +454,8 @@ export default function PaymentPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <Select value={formData.branch} onValueChange={(value: string) => handleInputChange("branch", value)}>
-                      <SelectTrigger>
+                    <Select value={form.branch} onValueChange={(v) => handleChange("branch", v)}>
+                      <SelectTrigger aria-label="Select branch">
                         <SelectValue placeholder="Select your preferred branch" />
                       </SelectTrigger>
                       <SelectContent>
@@ -207,32 +463,36 @@ export default function PaymentPage() {
                         <SelectItem value="gandhi-path">SJ Fitness - Gandhi Path, Jaipur</SelectItem>
                       </SelectContent>
                     </Select>
+                    {!form.branch && <p className="text-xs text-destructive mt-2">Please select a branch.</p>}
                   </CardContent>
                 </Card>
 
-                {/* Personal Information */}
                 <Card>
                   <CardHeader>
                     <CardTitle>Personal Information</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="firstName">First Name</Label>
                         <Input
                           id="firstName"
-                          value={formData.firstName}
-                          onChange={(e) => handleInputChange("firstName", e.target.value)}
                           placeholder="Enter your first name"
+                          value={form.firstName}
+                          onChange={(e) => handleChange("firstName", e.target.value)}
+                          aria-invalid={form.firstName.length > 0 && form.firstName.trim().length <= 1}
+
                         />
                       </div>
                       <div>
                         <Label htmlFor="lastName">Last Name</Label>
                         <Input
                           id="lastName"
-                          value={formData.lastName}
-                          onChange={(e) => handleInputChange("lastName", e.target.value)}
                           placeholder="Enter your last name"
+                          value={form.lastName}
+                          onChange={(e) => handleChange("lastName", e.target.value)}
+                          aria-invalid={form.lastName.length > 0 && form.lastName.trim().length <= 1}
+
                         />
                       </div>
                     </div>
@@ -241,26 +501,33 @@ export default function PaymentPage() {
                       <Input
                         id="email"
                         type="email"
-                        value={formData.email}
-                        onChange={(e) => handleInputChange("email", e.target.value)}
-                        placeholder="Enter your email address"
+                        placeholder="you@example.com"
+                        value={form.email}
+                        onChange={(e) => handleChange("email", e.target.value)}
+                        aria-invalid={!emailValid && form.email.length > 0}
                       />
+                      {!emailValid && form.email.length > 0 && (
+                        <p className="text-xs text-destructive mt-1">Enter a valid email.</p>
+                      )}
                     </div>
                     <div>
                       <Label htmlFor="phone">Phone Number</Label>
                       <Input
                         id="phone"
                         type="tel"
-                        value={formData.phone}
-                        onChange={(e) => handleInputChange("phone", e.target.value)}
-                        placeholder="Enter your phone number"
+                        placeholder="+91 98765 43210"
+                        value={form.phone}
+                        onChange={(e) => handleChange("phone", e.target.value)}
+                        aria-invalid={!phoneValid && form.phone.length > 0}
                       />
+                      {!phoneValid && form.phone.length > 0 && (
+                        <p className="text-xs text-destructive mt-1">Enter a valid phone number.</p>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
               </div>
 
-              {/* Right Column - Order Summary */}
               <div className="space-y-6">
                 <Card className="sticky top-24">
                   <CardHeader>
@@ -272,24 +539,30 @@ export default function PaymentPage() {
                         <Star className="w-6 h-6 text-black" />
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-semibold">{plan.name} Membership</h3>
-                        <p className="text-sm text-muted-foreground">{plan.description}</p>
+                        <h3 className="font-semibold">{selected.name} Membership</h3>
+                        <p className="text-sm text-muted-foreground">{selected.description}</p>
                       </div>
                     </div>
 
                     <div className="space-y-2">
                       <div className="flex justify-between">
-                        <span>Monthly Fee</span>
-                        <span>₹{plan.originalPrice}</span>
+                        <span>Plan</span>
+                        <span>{selected.name}</span>
                       </div>
-                      <div className="flex justify-between text-green-500">
-                        <span>Discount (30%)</span>
-                        <span>-₹{savings}</span>
-                      </div>
-                      <Separator />
                       <div className="flex justify-between font-bold text-lg">
                         <span>Total</span>
-                        <span>₹{plan.price}/month</span>
+                        <span>
+                          ₹{selected.price}
+                          {payMode === "subscription"
+                            ? selectedPlan === "1m"
+                              ? "/month"
+                              : selectedPlan === "3m"
+                                ? " every 3 months"
+                                : selectedPlan === "6m"
+                                  ? " every 6 months"
+                                  : " yearly"
+                            : ""}
+                        </span>
                       </div>
                     </div>
 
@@ -300,7 +573,7 @@ export default function PaymentPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <Check className="w-4 h-4 text-green-500" />
-                        <span>Cancel anytime</span>
+                        <span>{payMode === "subscription" ? "Cancel anytime" : "One-time purchase"}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Check className="w-4 h-4 text-green-500" />
@@ -309,12 +582,17 @@ export default function PaymentPage() {
                     </div>
 
                     <Button
-                      onClick={() => setCurrentStep(2)}
+                      onClick={startCheckout}
                       className="w-full bg-brand-yellow text-black hover:bg-brand-yellow/90 font-semibold"
-                      disabled={!isFormValid()}
+                      disabled={!overall || isStartingCheckout}
                     >
-                      Continue to Payment
+                      {isStartingCheckout ? "Starting checkout..." : "Continue to Payment"}
                     </Button>
+                    {!overall && (
+                      <p className="text-xs text-muted-foreground">
+                        Fill your details and select a branch to continue.
+                      </p>
+                    )}
                   </CardContent>
                 </Card>
               </div>
@@ -327,132 +605,49 @@ export default function PaymentPage() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.25 }}
               className="grid lg:grid-cols-2 gap-8"
             >
-              {/* Payment Form */}
               <div className="space-y-6">
                 <div>
-                  <h1 className="text-3xl font-bold mb-2">Payment Details</h1>
-                  <p className="text-muted-foreground">Secure payment powered by industry-leading encryption.</p>
+                  <h1 className="text-3xl font-bold mb-2">Payment</h1>
+                  <p className="text-muted-foreground flex items-center gap-2">
+                    <Shield className="w-4 h-4 text-green-500" />
+                    Payments are processed securely by Razorpay with bank-grade encryption.
+                  </p>
                 </div>
 
-                {/* Payment Method Selection */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <CreditCard className="w-5 h-5 text-brand-yellow" />
-                      Payment Method
+                      Complete Payment
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-4">
-                      <div className="flex items-center space-x-3 p-4 rounded-lg border border-border hover:border-brand-yellow/50 transition-colors">
-                        <RadioGroupItem value="card" id="card" />
-                        <CreditCard className="w-5 h-5" />
-                        <Label htmlFor="card" className="flex-1">
-                          Credit/Debit Card
-                        </Label>
+                  <CardContent className="space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      A Razorpay window should have opened. If it didn’t, click the button below to try again.
+                    </p>
+                    <div className="flex gap-3">
+                      <Button onClick={startCheckout} className="bg-brand-yellow text-black hover:bg-brand-yellow/90">
+                        Pay Again
+                      </Button>
+                      <Button variant="outline" onClick={() => setCurrentStep(1)}>
+                        Back
+                      </Button>
+                    </div>
+                    {payMode === "one-time" && (
+                      <div className="text-xs text-muted-foreground">One-time payments support UPI and cards.</div>
+                    )}
+                    {payMode === "subscription" && (
+                      <div className="text-xs text-muted-foreground">
+                        Subscriptions require a supported card with e-mandate.
                       </div>
-                      <div className="flex items-center space-x-3 p-4 rounded-lg border border-border hover:border-brand-yellow/50 transition-colors">
-                        <RadioGroupItem value="upi" id="upi" />
-                        <Smartphone className="w-5 h-5" />
-                        <Label htmlFor="upi" className="flex-1">
-                          UPI Payment
-                        </Label>
-                      </div>
-                    </RadioGroup>
+                    )}
                   </CardContent>
                 </Card>
-
-                {/* Payment Form */}
-                {paymentMethod === "card" && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Card Details</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div>
-                        <Label htmlFor="cardName">Cardholder Name</Label>
-                        <Input
-                          id="cardName"
-                          value={formData.cardName}
-                          onChange={(e) => handleInputChange("cardName", e.target.value)}
-                          placeholder="Name on card"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="cardNumber">Card Number</Label>
-                        <Input
-                          id="cardNumber"
-                          value={formData.cardNumber}
-                          onChange={(e) => handleInputChange("cardNumber", e.target.value)}
-                          placeholder="1234 5678 9012 3456"
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="expiryDate">Expiry Date</Label>
-                          <Input
-                            id="expiryDate"
-                            value={formData.expiryDate}
-                            onChange={(e) => handleInputChange("expiryDate", e.target.value)}
-                            placeholder="MM/YY"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="cvv">CVV</Label>
-                          <Input
-                            id="cvv"
-                            value={formData.cvv}
-                            onChange={(e) => handleInputChange("cvv", e.target.value)}
-                            placeholder="123"
-                          />
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {paymentMethod === "upi" && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>UPI Payment</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-muted-foreground mb-4">
-                        You will be redirected to your UPI app to complete the payment.
-                      </p>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Shield className="w-4 h-4 text-green-500" />
-                        <span>Secure UPI payment via PhonePe, Google Pay, or Paytm</span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-
-                <div className="flex gap-4">
-                  <Button variant="outline" onClick={() => setCurrentStep(1)} className="flex-1">
-                    Back
-                  </Button>
-                  <Button
-                    onClick={handlePayment}
-                    className="flex-1 bg-brand-yellow text-black hover:bg-brand-yellow/90 font-semibold"
-                    disabled={isProcessing || !isFormValid()}
-                  >
-                    {isProcessing ? (
-                      <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
-                        Processing...
-                      </div>
-                    ) : (
-                      `Pay ₹${plan.price}`
-                    )}
-                  </Button>
-                </div>
               </div>
 
-              {/* Order Summary (Repeated) */}
               <div className="space-y-6">
                 <Card className="sticky top-24">
                   <CardHeader>
@@ -464,8 +659,8 @@ export default function PaymentPage() {
                         <Star className="w-6 h-6 text-black" />
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-semibold">{plan.name} Membership</h3>
-                        <p className="text-sm text-muted-foreground">{plan.description}</p>
+                        <h3 className="font-semibold">{selected.name} Membership</h3>
+                        <p className="text-sm text-muted-foreground">{selected.description}</p>
                       </div>
                     </div>
 
@@ -475,16 +670,20 @@ export default function PaymentPage() {
                       <div className="flex justify-between">
                         <span>Name:</span>
                         <span>
-                          {formData.firstName} {formData.lastName}
+                          {form.firstName} {form.lastName}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span>Email:</span>
-                        <span>{formData.email}</span>
+                        <span>{form.email}</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Branch:</span>
-                        <span>{formData.branch === "vaisali-nagar" ? "Vaisali Nagar" : "Gandhi Path"}</span>
+                        <span>{form.branch === "vaisali-nagar" ? "Vaisali Nagar" : "Gandhi Path"}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Payment Type:</span>
+                        <span>{payMode === "subscription" ? "Monthly subscription" : "One-time payment"}</span>
                       </div>
                     </div>
 
@@ -492,83 +691,28 @@ export default function PaymentPage() {
 
                     <div className="space-y-2">
                       <div className="flex justify-between">
-                        <span>Monthly Fee</span>
-                        <span>₹{plan.originalPrice}</span>
-                      </div>
-                      <div className="flex justify-between text-green-500">
-                        <span>Discount (30%)</span>
-                        <span>-₹{savings}</span>
-                      </div>
-                      <Separator />
-                      <div className="flex justify-between font-bold text-lg">
-                        <span>Total</span>
-                        <span>₹{plan.price}/month</span>
+                        <span>{payMode === "subscription" ? "Recurring Amount" : "One-time Amount"}</span>
+                        <span>
+                          ₹{selected.price}
+                          {payMode === "subscription"
+                            ? selectedPlan === "1m"
+                              ? "/month"
+                              : selectedPlan === "3m"
+                                ? " every 3 months"
+                                : selectedPlan === "6m"
+                                  ? " every 6 months"
+                                  : " yearly"
+                            : ""}
+                        </span>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Shield className="w-4 h-4 text-green-500" />
-                      <span>Secured by 256-bit SSL encryption</span>
+                      <span>Razorpay protects your information</span>
                     </div>
                   </CardContent>
                 </Card>
-              </div>
-            </motion.div>
-          )}
-
-          {currentStep === 3 && (
-            <motion.div
-              key="step3"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5 }}
-              className="max-w-2xl mx-auto text-center space-y-6"
-            >
-              <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto">
-                <Check className="w-10 h-10 text-white" />
-              </div>
-
-              <div>
-                <h1 className="text-4xl font-bold mb-4">Welcome to SJ Fitness!</h1>
-                <p className="text-xl text-muted-foreground mb-6">
-                  Your {plan.name} membership has been successfully activated.
-                </p>
-              </div>
-
-              <Card>
-                <CardContent className="p-6">
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2 text-sm">
-                      <Clock className="w-4 h-4 text-brand-yellow" />
-                      <span>Membership starts immediately</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <Building2 className="w-4 h-4 text-brand-yellow" />
-                      <span>Branch: {formData.branch === "vaisali-nagar" ? "Vaisali Nagar" : "Gandhi Path"}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <Star className="w-4 h-4 text-brand-yellow" />
-                      <span>
-                        Plan: {plan.name} - ₹{plan.price}/month
-                      </span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <div className="space-y-4">
-                <p className="text-muted-foreground">
-                  A confirmation email has been sent to {formData.email} with your membership details and next steps.
-                </p>
-
-                <div className="flex gap-4 justify-center">
-                  <Button asChild className="bg-brand-yellow text-black hover:bg-brand-yellow/90">
-                    <Link href="/dashboard">Go to Dashboard</Link>
-                  </Button>
-                  <Button variant="outline" asChild>
-                    <Link href="/">Back to Home</Link>
-                  </Button>
-                </div>
               </div>
             </motion.div>
           )}
