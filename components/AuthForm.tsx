@@ -118,39 +118,55 @@ export default function AuthForm() {
   const handleContinue = () => selectedBranch && setStep("details")
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setIsLoading(true)
-    const formData = new FormData(e.currentTarget)
-    const name = String(formData.get("name") || "")
-    const email = String(formData.get("email") || "")
-    const phone = String(formData.get("phone") || "")
-    const date = String(formData.get("preferred-date") || "")
-    const time = String(formData.get("preferred-time") || "")
+    e.preventDefault();
+    setIsLoading(true);
+    const formData = new FormData(e.currentTarget);
+    const name = String(formData.get("name") || "");
+    const email = String(formData.get("email") || "");
+    const phone = String(formData.get("phone") || "");
+    const date = String(formData.get("preferred-date") || "");
+    const time = String(formData.get("preferred-time") || "");
+    const branchName = selectedBranch === "vaisali" ? "Vaisali Nagar" : "Gandhi Path";
 
     try {
-      const res = await fetch("/api/email/day-pass", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name,
-          email,
-          branch: selectedBranch === "vaisali" ? "Vaisali Nagar" : "Gandhi Path",
-          date: date || undefined,
-          qrUrl: undefined,
-          phone,
-          time,
-        }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data?.error || "Failed to send email")
-      toast({ title: "Free trial booked!", description: "We’ve emailed your 1‑day pass." })
-      setStep("success")
+        // --- FIX: GENERATE THE QR CODE URL HERE ---
+        // 1. Create a data object for the QR code to encode
+        const qrData = JSON.stringify({ 
+            email: email, 
+            date: date, 
+            branch: branchName, 
+            type: "day-pass" 
+        });
+        
+        // 2. Use a public API to generate a URL that points to a QR code image
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData)}`;
+
+        // Now, send the generated qrUrl to your backend API
+        const res = await fetch("/api/email/day-pass", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                name,
+                email,
+                branch: branchName,
+                date: date || undefined,
+                qrUrl: qrUrl, // Use the generated URL
+                phone,
+                time,
+            }),
+        });
+        
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.error || "Failed to send email");
+        
+        toast({ title: "Free trial booked!", description: "We’ve emailed your 1‑day pass." });
+        setStep("success");
     } catch (err: any) {
-      toast({ title: "Could not send email", description: err?.message || "Please try again.", variant: "destructive" })
+        toast({ title: "Could not send email", description: err?.message || "Please try again.", variant: "destructive" });
     } finally {
-      setIsLoading(false)
+        setIsLoading(false);
     }
-  }
+  };
 
   const handleBack = () => setStep("branch")
   const resetForm = () => {
