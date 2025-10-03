@@ -129,20 +129,24 @@ export default function AuthForm() {
     const branchName = selectedBranch === "vaisali" ? "Vaisali Nagar" : "Gandhi Path";
 
     try {
-        // --- FIX: GENERATE THE QR CODE URL HERE ---
-        // 1. Create a data object for the QR code to encode
-        const qrData = JSON.stringify({ 
-            email: email, 
-            date: date, 
-            branch: branchName, 
-            type: "day-pass" 
+        // --- STEP 1: SAVE THE TRIAL DATA TO THE DATABASE ---
+        const dbRes = await fetch("/api/trial", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, email, phone }),
         });
-        
-        // 2. Use a public API to generate a URL that points to a QR code image
+
+        const dbData = await dbRes.json();
+        if (!dbRes.ok) {
+            // If the database saving fails, stop the process.
+            throw new Error(dbData?.error || "Failed to save trial data.");
+        }
+
+        // --- STEP 2: SEND THE CONFIRMATION EMAIL (ONLY IF STEP 1 SUCCEEDED) ---
+        const qrData = JSON.stringify({ email: email, date: date, branch: branchName, type: "day-pass" });
         const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData)}`;
 
-        // Now, send the generated qrUrl to your backend API
-        const res = await fetch("/api/email/day-pass", {
+        const emailRes = await fetch("/api/email/day-pass", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -150,19 +154,19 @@ export default function AuthForm() {
                 email,
                 branch: branchName,
                 date: date || undefined,
-                qrUrl: qrUrl, // Use the generated URL
+                qrUrl: qrUrl,
                 phone,
                 time,
             }),
         });
         
-        const data = await res.json();
-        if (!res.ok) throw new Error(data?.error || "Failed to send email");
+        const emailData = await emailRes.json();
+        if (!emailRes.ok) throw new Error(emailData?.error || "Failed to send email");
         
         toast({ title: "Free trial booked!", description: "We’ve emailed your 1‑day pass." });
         setStep("success");
     } catch (err: any) {
-        toast({ title: "Could not send email", description: err?.message || "Please try again.", variant: "destructive" });
+        toast({ title: "Could not complete request", description: err?.message || "Please try again.", variant: "destructive" });
     } finally {
         setIsLoading(false);
     }
