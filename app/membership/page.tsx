@@ -3,12 +3,35 @@
 import type React from "react"
 
 import { useCallback, useMemo, useState } from "react"
-import { motion } from "framer-motion"
+import { motion, Variants } from "framer-motion"
 import { Star, Zap, Gem, Crown, Check } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import Image from "next/image"
 import { cn } from "@/lib/utils"
+
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.2, // Time delay between each child animating in
+    },
+  },
+};
+
+// Animation variants for each text element
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 20 }, // Start invisible and 20px down
+  visible: {
+    opacity: 1,
+    y: 0, // Animate to full opacity and original position
+    transition: {
+      duration: 0.6,
+      ease: 'easeOut',
+    },
+  },
+};
 
 type Plan = {
   key: "1m" | "3m" | "6m" | "12m"
@@ -39,25 +62,44 @@ export default function MembershipPage() {
   return (
     <main className="min-h-screen">
       {/* Hero */}
-      <section className="relative">
-        <div className="relative h-[91vh] md:h-[91vh] overflow-hidden">
-          <Image src="/membership-hero.jpg" alt="SJ Fitness Membership" fill className="object-cover" priority />
-          <div className="absolute inset-0 bg-black/55" />
-          <div className="relative z-10 max-w-6xl mx-auto px-4 h-full flex items-center">
-            <div>
-              <h1 className="text-4xl md:text-6xl font-extrabold uppercase tracking-tight text-white text-balance">
-                CHOOSE YOUR <span className="text-[var(--color-brand-yellow)]">MEMBERSHIP</span>
-              </h1>
-              <p className="text-gray-200 mt-3 md:text-lg">
-                Flexible plans. Transparent pricing. Expert guidance at every step.
-              </p>
-              <p className="text-gray-300 mt-1 text-sm md:text-base">
-                Pick the commitment that matches your goals and get started today.
-              </p>
-            </div>
-          </div>
+    <section className="relative">
+      <div className="relative h-[91vh] md:h-[91vh] overflow-hidden">
+        {/* Using a standard img tag for broad compatibility. Styled to cover the area. */}
+        <img
+          src="/membership-hero.jpg"
+          alt="SJ Fitness Membership"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-black/55" />
+        <div className="relative z-10 max-w-6xl mx-auto px-4 h-full flex items-center">
+          {/* Motion container to apply the variants */}
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            <motion.h1
+              variants={itemVariants}
+              className="text-4xl md:text-6xl font-extrabold uppercase tracking-tight text-white text-balance"
+            >
+              CHOOSE YOUR <span className="text-yellow-400">MEMBERSHIP</span>
+            </motion.h1>
+            <motion.p
+              variants={itemVariants}
+              className="text-gray-200 mt-3 md:text-lg"
+            >
+              Flexible plans. Transparent pricing. Expert guidance at every step.
+            </motion.p>
+            <motion.p
+              variants={itemVariants}
+              className="text-gray-300 mt-1 text-sm md:text-base"
+            >
+              Pick the commitment that matches your goals and get started today.
+            </motion.p>
+          </motion.div>
         </div>
-      </section>
+      </div>
+    </section>
 
       {/* Main two-column layout (old style preserved) */}
       <section className="max-w-6xl mx-auto px-4 py-8 grid lg:grid-cols-3 gap-8">
