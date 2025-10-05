@@ -2,9 +2,9 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { motion, AnimatePresence, easeOut } from "framer-motion"
-import { Dumbbell, Zap, HeartPulse, Users } from "lucide-react"
-import { useEffect, useState } from "react"
+import { motion, easeOut } from "framer-motion"
+import { Dumbbell, Zap, HeartPulse, Users, Volume2, VolumeX, ChevronLeft, ChevronRight } from "lucide-react"
+import { useEffect, useState, useRef, useMemo } from "react"
 
 // --- Reusable Motion Variants ---
 const sectionVariant = {
@@ -16,41 +16,96 @@ const sectionVariant = {
   },
 }
 
-// --- Testimonials Data ---
-const testimonials = [
+type VideoTestimonial = {
+  src: string
+  poster?: string
+  name: string
+  role?: string
+}
+
+const videoTestimonials: VideoTestimonial[] = [
   {
-    quote:
-      "SJ Fitness transformed not just my body, but my entire mindset. The personalized training approach and supportive community made all the difference in achieving my goals.",
-    name: "Aarav Sharma",
-    role: "Lost 25kg in 8 months",
+    src: "/sjfitness_videos/testimonials/1.mp4",
+    poster: "/sjfitness_videos/testimonials/1.jpg",
+    name: "Yatharth Sharma",
   },
   {
-    quote:
-      "From my first day to now, the trainers have been incredibly knowledgeable and motivating. The clean facilities and variety of equipment keep my workouts exciting and effective.",
-    name: "Priya Singh",
-    role: "Strength Training Enthusiast",
+    src: "/sjfitness_videos/testimonials/2.mp4",
+    poster: "/sjfitness_videos/testimonials/2.jpg",
+    name: "Vinay Sharma",
+    
   },
   {
-    quote:
-      "The diverse class schedule fits perfectly with my busy lifestyle. Whether it's early morning HIIT or evening yoga, there's always a session that works for me.",
-    name: "Rohan Verma",
-    role: "Fitness Journey: 2+ Years",
+    src: "/sjfitness_videos/testimonials/3.mp4",
+    poster: "/sjfitness_videos/testimonials/3.jpg",
+    name: "Kavya Gupta",
+  },
+  {
+    src: "/sjfitness_videos/testimonials/4.mp4",
+    poster: "/sjfitness_videos/testimonials/4.jpg",
+    name: "Rawat Dewani",
+  },
+  {
+    src: "/sjfitness_videos/testimonials/5.mp4",
+    poster: "/sjfitness_videos/testimonials/5.jpg",
+    name: "Anil Sharma & Priyanka Sharma",
+  },
+  {
+    src: "/sjfitness_videos/testimonials/6.mp4",
+    poster: "/sjfitness_videos/testimonials/6.jpg",
+    name: "Sachit",
+  },
+  {
+    src: "/sjfitness_videos/testimonials/7.mp4",
+    poster: "/sjfitness_videos/testimonials/7.jpg",
+    name: "Yukta",
+  },
+  {
+    src: "/sjfitness_videos/testimonials/8.mp4",
+    poster: "/sjfitness_videos/testimonials/8.jpg",
+    name: "Yash",
   },
 ]
 
 // --- Home Page Component ---
 export default function HomePage() {
-  const [currentTestimonial, setCurrentTestimonial] = useState(0)
+  const [muted, setMuted] = useState(true)
+  const [index, setIndex] = useState(0)
+  const videoRef = useRef<HTMLVideoElement | null>(null)
 
+  // --- NAVIGATION LOGIC ---
+  const handleEnded = () => {
+    setIndex((prev) => (prev + 1) % videoTestimonials.length)
+  }
+  
+  const handleNext = () => {
+    setIndex((prev) => (prev + 1) % videoTestimonials.length)
+  }
+
+  const handlePrevious = () => {
+    setIndex((prev) => (prev - 1 + videoTestimonials.length) % videoTestimonials.length)
+  }
+  // --- END NAVIGATION LOGIC ---
+
+  // When index or muted changes, ensure video plays and mute state applies
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTestimonial((prev) => (prev + 1) % testimonials.length)
-    }, 5000)
-    return () => clearInterval(timer)
-  }, [])
+    if (!videoRef.current) return
+    videoRef.current.muted = muted
+    // Attempt autoplay after changing source
+    const play = async () => {
+      try {
+        await videoRef.current?.play()
+      } catch {
+        // Autoplay might be blocked if unmuted; leave it to user interaction
+      }
+    }
+    play()
+  }, [index, muted])
+
+  const activeVideo = useMemo(() => videoTestimonials[index], [index])
 
   return (
-    <div className="bg-black text-white">
+    <div className="bg-background text-foreground">
       {/* 1. Hero Section with Video Background */}
       <section className="relative h-[91vh] flex items-center justify-center text-center overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-full bg-black/60 z-10"></div>
@@ -62,10 +117,8 @@ export default function HomePage() {
           className="absolute top-1/2 left-1/2 w-full h-full object-cover -translate-x-1/2 -translate-y-1/2 z-0"
           poster="https://images.unsplash.com/photo-1571902943202-507ec2618e8f?q=80&w=2575&auto=format&fit=crop"
         >
-          <source
-            src="https://assets.mixkit.co/videos/preview/mixkit-man-lifting-weights-in-the-gym-2343-large.mp4"
-            type="video/mp4"
-          />
+          <source src="/mixkit-fitness-man-lifting-weights-at-the-gym-14661-hd-ready.mp4" type="video/mp4" />
+
         </video>
         <motion.div
           className="relative z-20 px-4"
@@ -73,7 +126,7 @@ export default function HomePage() {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1, delay: 0.2, ease: easeOut }}
         >
-          <h1 className="text-4xl md:text-7xl font-extrabold tracking-tighter uppercase">
+          <h1 className="text-4xl md:text-7xl font-extrabold tracking-tighter uppercase text-white">
             Transform Your
             <br />
             <span className="text-brand-yellow">Potential</span>
@@ -93,7 +146,7 @@ export default function HomePage() {
 
       {/* 2. "Why Us" Features Section */}
       <motion.section
-        className="py-20 px-4 bg-zinc-900"
+        className="py-20 px-4"
         variants={sectionVariant}
         initial="hidden"
         whileInView="visible"
@@ -103,7 +156,7 @@ export default function HomePage() {
           <h2 className="text-3xl md:text-4xl font-extrabold uppercase">
             Why Choose <span className="text-brand-yellow">SJ Fitness</span>
           </h2>
-          <p className="mt-4 text-gray-400 max-w-2xl mx-auto">
+          <p className="mt-4 text-muted-foreground max-w-2xl mx-auto">
             Experience the perfect blend of cutting-edge facilities, expert guidance, and a supportive community that
             celebrates every milestone on your fitness journey.
           </p>
@@ -132,12 +185,12 @@ export default function HomePage() {
             ].map((feature, index) => (
               <div
                 key={index}
-                className="bg-zinc-800 p-8 rounded-lg group hover:bg-zinc-700 transition-colors duration-300 relative overflow-hidden"
+                className="bg-card p-8 rounded-lg group hover:bg-muted transition-colors duration-300 relative overflow-hidden"
               >
                 <div className="absolute top-0 left-0 w-24 h-24 bg-brand-yellow/5 blur-3xl group-hover:w-32 group-hover:h-32 transition-all duration-500"></div>
                 <feature.icon className="w-12 h-12 text-brand-yellow mx-auto mb-4" />
-                <h3 className="text-xl font-bold uppercase">{feature.title}</h3>
-                <p className="mt-2 text-gray-400">{feature.desc}</p>
+                <h3 className="text-xl font-bold uppercase text-foreground">{feature.title}</h3>
+                <p className="mt-2 text-muted-foreground">{feature.desc}</p>
               </div>
             ))}
           </div>
@@ -146,7 +199,7 @@ export default function HomePage() {
 
       {/* 3. Class Showcase Section */}
       <motion.section
-        className="py-20 px-4 bg-black"
+        className="py-20 px-4 bg-card"
         variants={sectionVariant}
         initial="hidden"
         whileInView="visible"
@@ -157,7 +210,7 @@ export default function HomePage() {
             <h2 className="text-3xl md:text-4xl font-extrabold uppercase">
               Discover Your <span className="text-brand-yellow">Perfect Workout</span>
             </h2>
-            <p className="mt-4 text-gray-400 max-w-2xl mx-auto">
+            <p className="mt-4 text-muted-foreground max-w-2xl mx-auto">
               Whether you&apos;re a beginner taking your first steps or an athlete pushing new limits, our expertly designed
               programs cater to every fitness level and aspiration.
             </p>
@@ -184,33 +237,109 @@ export default function HomePage() {
         </div>
       </motion.section>
 
-      {/* 4. Testimonial Slider */}
+      {/* Video Testimonials (auto-advance, mute toggle) */}
       <motion.section
-        className="py-20 px-4 bg-zinc-900"
+        className="py-20 px-4 bg-card"
         variants={sectionVariant}
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
       >
-        <div className="container mx-auto max-w-3xl text-center relative h-48">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentTestimonial}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.5, ease: easeOut }}
-              className="absolute inset-0"
-            >
-              <p className="text-xl md:text-2xl italic text-gray-300">
-                &quot;{testimonials[currentTestimonial].quote}&quot;
-              </p>
-              <h4 className="mt-6 text-xl font-bold uppercase text-brand-yellow">
-                {testimonials[currentTestimonial].name}
-              </h4>
-              <p className="text-gray-500">{testimonials[currentTestimonial].role}</p>
-            </motion.div>
-          </AnimatePresence>
+        <div className="container mx-auto max-w-4xl">
+          <h2 className="text-center text-3xl md:text-4xl font-extrabold uppercase mb-8">
+            Member <span className="text-(--color-brand-yellow)">Stories</span>
+          </h2>
+
+          <div className="relative overflow-hidden rounded-xl border border-border bg-background shadow-sm">
+            <div className="relative aspect-video">
+              <video
+                key={activeVideo.src}
+                ref={videoRef}
+                src={activeVideo.src}
+                poster={activeVideo.poster}
+                controls={false}
+                muted={muted}
+                autoPlay
+                playsInline
+                preload="metadata"
+                className="h-full w-full object-contain bg-black"
+                onEnded={handleEnded}
+              />
+              {/* Controls */}
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-black/0 to-black/40" />
+              <div className="absolute inset-x-0 top-0 p-3 flex justify-between">
+                 <button
+                    type="button"
+                    onClick={handlePrevious}
+                    className="rounded-md bg-black/60 px-2 py-1 text-xs text-white backdrop-blur hover:bg-black/70"
+                  >
+                    Previous
+                  </button>
+                 <button
+                    type="button"
+                    onClick={handleNext}
+                    className="rounded-md bg-black/60 px-2 py-1 text-xs text-white backdrop-blur hover:bg-black/70"
+                  >
+                    Next
+                  </button>
+              </div>
+              <div className="absolute inset-x-0 bottom-0 p-4 flex items-center justify-between">
+                <div className="pointer-events-none">
+                  <p className="text-white text-sm opacity-90">{activeVideo.role}</p>
+                  <p className="text-white font-semibold">{activeVideo.name}</p>
+                </div>
+                <button
+                  type="button"
+                  aria-label={muted ? "Unmute video" : "Mute video"}
+                  onClick={() => setMuted((m) => !m)}
+                  className="pointer-events-auto inline-flex items-center gap-2 rounded-md bg-black/60 px-3 py-2 text-white backdrop-blur transition hover:bg-black/70"
+                >
+                  {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                  <span className="text-sm">{muted ? "Sound off" : "Sound on"}</span>
+                </button>
+              </div>
+              {/* Next indicator (clickable overlay top-right) */}
+              <button
+                type="button"
+                onClick={handleEnded}
+                className="absolute right-3 top-3 rounded-md bg-black/60 px-2 py-1 text-xs text-white backdrop-blur hover:bg-black/70"
+              >
+                Next
+              </button>
+            </div>
+            {/* Progress strip of videos */}
+            <div className="relative">
+              <div
+                className="flex gap-2 p-3 overflow-x-auto snap-x snap-mandatory scrollbar-none"
+                style={{ scrollBehavior: "smooth" }}
+              >
+              {videoTestimonials.map((v, i) => (
+                <button
+                  key={v.src}
+                  onClick={() => setIndex(i)}
+                  className={cn(
+                    "group relative h-14 w-24 shrink-0 overflow-hidden rounded-md border snap-start",
+                    i === index ? "border-(--color-brand-yellow)" : "border-border",
+                  )}
+                >
+                  <Image
+                    src={v.poster || "/placeholder.svg?height=90&width=160&query=fitness video poster"}
+                    alt={v.name}
+                    fill
+                    sizes="96px"
+                    className="object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors" />
+                </button>
+              ))}
+              </div>
+              {videoTestimonials.length > 3 && (
+                <>
+                  
+                </>
+              )}
+            </div>
+          </div>
         </div>
       </motion.section>
 
@@ -226,7 +355,7 @@ export default function HomePage() {
           </p>
           <Link
             href="/join"
-            className="mt-8 inline-block bg-black text-white font-bold py-4 px-10 rounded-md text-lg uppercase hover:bg-zinc-800 transition-colors duration-300 transform hover:scale-105"
+            className="mt-8 inline-block bg-black text-white font-bold py-4 px-10 rounded-md text-lg uppercase hover:bg-primary/90 transition-colors duration-300 transform hover:scale-105"
           >
             Begin Your Transformation
           </Link>
@@ -234,4 +363,8 @@ export default function HomePage() {
       </section>
     </div>
   )
+}
+
+function cn(...classes: Array<string | undefined | false>) {
+  return classes.filter(Boolean).join(" ")
 }

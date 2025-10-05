@@ -134,3 +134,86 @@
     animation: none;
     mix-blend-mode: normal;
 }
+
+@keyframes toast-in-kf {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes toast-out-kf {
+  to {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+@keyframes toast-progress-kf {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+@keyframes icon-pulse-kf {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 0.25;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+}
+@keyframes check-draw-kf {
+  from {
+    stroke-dashoffset: 36;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes cross-draw-kf {
+  from {
+    stroke-dashoffset: 24;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* utilities */
+.animate-toast-in {
+  animation: toast-in-kf 200ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+.animate-toast-out {
+  animation: toast-out-kf 150ms ease both;
+}
+.toast-progress {
+  animation: toast-progress-kf var(--toast-duration, 6000ms) linear forwards;
+}
+.animate-icon-pulse {
+  animation: icon-pulse-kf 1.6s ease-out infinite;
+}
+.icon-check {
+  stroke-dasharray: 36;
+  stroke-dashoffset: 36;
+}
+.animate-check-draw {
+  animation: check-draw-kf 600ms ease-out 120ms forwards;
+}
+.icon-cross-line {
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+}
+.animate-cross-draw {
+  animation: cross-draw-kf 480ms ease-out 80ms forwards;
+}

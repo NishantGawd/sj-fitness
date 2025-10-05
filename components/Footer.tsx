@@ -17,14 +17,11 @@ export default function Footer() {
               guidance and state-of-the-art facilities.
             </p>
             <div className="flex space-x-4">
-              <Link href="#" className="text-gray-400 hover:text-brand-yellow transition-colors">
+              <Link href="https://www.instagram.com/sj_fitness_jaipur/?hl=en" className="text-gray-400 hover:text-brand-yellow transition-colors">
                 <Instagram className="w-5 h-5" />
               </Link>
-              <Link href="#" className="text-gray-400 hover:text-brand-yellow transition-colors">
+              <Link href="https://www.facebook.com/sjfitnessfactory/" className="text-gray-400 hover:text-brand-yellow transition-colors">
                 <Facebook className="w-5 h-5" />
-              </Link>
-              <Link href="#" className="text-gray-400 hover:text-brand-yellow transition-colors">
-                <Twitter className="w-5 h-5" />
               </Link>
             </div>
           </div>
@@ -52,16 +49,16 @@ export default function Footer() {
           <div className="space-y-4">
             <h3 className="text-lg font-bold text-white uppercase">Services</h3>
             <div className="space-y-2">
-              <Link href="/strength-training" className="block text-gray-400 hover:text-brand-yellow transition-colors">
+              <Link href="/services/strength" className="block text-gray-400 hover:text-brand-yellow transition-colors">
                 Strength Training
               </Link>
-              <Link href="/cardio" className="block text-gray-400 hover:text-brand-yellow transition-colors">
+              <Link href="/services/cardio" className="block text-gray-400 hover:text-brand-yellow transition-colors">
                 Cardio Workouts
               </Link>
-              <Link href="/yoga" className="block text-gray-400 hover:text-brand-yellow transition-colors">
+              <Link href="/services/yoga" className="block text-gray-400 hover:text-brand-yellow transition-colors">
                 Yoga & Flexibility
               </Link>
-              <Link href="/crossfit" className="block text-gray-400 hover:text-brand-yellow transition-colors">
+              <Link href="/services/crossfit" className="block text-gray-400 hover:text-brand-yellow transition-colors">
                 CrossFit Training
               </Link>
             </div>
@@ -74,20 +71,20 @@ export default function Footer() {
               <div className="flex items-start space-x-3">
                 <MapPin className="w-5 h-5 text-brand-yellow mt-0.5 flex-shrink-0" />
                 <p className="text-gray-400 text-sm">
-                  123 Fitness Street
+                  2nd Floor, Akshardham Chauraha, B1/564A
                   <br />
-                  Malviya Nagar, Jaipur
+                  Chitrakoot, Jaipur
                   <br />
-                  Rajasthan 302017
+                  Rajasthan 302021
                 </p>
               </div>
               <div className="flex items-center space-x-3">
                 <Phone className="w-5 h-5 text-brand-yellow flex-shrink-0" />
-                <p className="text-gray-400 text-sm">+91 98765 43210</p>
+                <p className="text-gray-400 text-sm">+918824249083</p>
               </div>
               <div className="flex items-center space-x-3">
                 <Mail className="w-5 h-5 text-brand-yellow flex-shrink-0" />
-                <p className="text-gray-400 text-sm">info@sjfitness.com</p>
+                <p className="text-gray-400 text-sm">hello@sjfitness.com</p>
               </div>
             </div>
           </div>

@@ -40,20 +40,19 @@ export default function MembershipPage() {
     <main className="min-h-screen">
       {/* Hero */}
       <section className="relative">
-        <div className="relative h-[260px] w-full overflow-hidden rounded-none">
-          <Image
-            src="/interior.jpg"
-            alt="Train hard at SJ Fitness"
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-black/50" />
+        <div className="relative h-[91vh] md:h-[91vh] overflow-hidden">
+          <Image src="/membership-hero.jpg" alt="SJ Fitness Membership" fill className="object-cover" priority />
+          <div className="absolute inset-0 bg-black/55" />
           <div className="relative z-10 max-w-6xl mx-auto px-4 h-full flex items-center">
             <div>
-              <h1 className="text-3xl md:text-4xl font-extrabold text-white text-balance">Complete Your Membership</h1>
-              <p className="text-zinc-300 mt-2 text-pretty">
-                Choose your plan and payment type. Pay securely with Card, and for one-time payments, UPI is available.
+              <h1 className="text-4xl md:text-6xl font-extrabold uppercase tracking-tight text-white text-balance">
+                CHOOSE YOUR <span className="text-[var(--color-brand-yellow)]">MEMBERSHIP</span>
+              </h1>
+              <p className="text-gray-200 mt-3 md:text-lg">
+                Flexible plans. Transparent pricing. Expert guidance at every step.
+              </p>
+              <p className="text-gray-300 mt-1 text-sm md:text-base">
+                Pick the commitment that matches your goals and get started today.
               </p>
             </div>
           </div>
@@ -159,6 +158,62 @@ export default function MembershipPage() {
             </button>
           </div>
         </aside>
+      </section>
+
+      {/* What's Included and Payment & Support sections */}
+      <section className="max-w-6xl mx-auto px-4 pb-12">
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="rounded-2xl border bg-card p-6">
+            <h3 className="text-xl font-semibold">What’s Included</h3>
+            <ul className="mt-4 grid gap-3 text-sm text-muted-foreground">
+              <li className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-green-500" /> Unlimited gym access
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-green-500" /> Complimentary induction session
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-green-500" /> Workout plan templates
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-green-500" /> Locker and shower facilities
+              </li>
+            </ul>
+          </div>
+          <div className="rounded-2xl border bg-card p-6">
+            <h3 className="text-xl font-semibold">Payment & Support</h3>
+            <p className="mt-4 text-sm text-muted-foreground">
+              Pay securely by card. UPI is available for one-time payments. Need help choosing a plan? Our team will
+              guide you.
+            </p>
+            <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
+              <span className="rounded-md border px-2 py-1">Visa</span>
+              <span className="rounded-md border px-2 py-1">Mastercard</span>
+              <span className="rounded-md border px-2 py-1">UPI</span>
+              <span className="rounded-md border px-2 py-1">Rupay</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-8 rounded-2xl border bg-card p-6">
+          <h3 className="text-xl font-semibold">FAQs</h3>
+          <dl className="mt-4 space-y-4">
+            <div>
+              <dt className="font-medium">Can I change plans later?</dt>
+              <dd className="text-sm text-muted-foreground">
+                Yes, you can switch plans at renewal or contact support for help.
+              </dd>
+            </div>
+            <div>
+              <dt className="font-medium">Do you offer student discounts?</dt>
+              <dd className="text-sm text-muted-foreground">Ask our front desk for current offers and eligibility.</dd>
+            </div>
+            <div>
+              <dt className="font-medium">Is there a joining fee?</dt>
+              <dd className="text-sm text-muted-foreground">No joining fee. Focus on your training from day one.</dd>
+            </div>
+          </dl>
+        </div>
       </section>
     </main>
   )

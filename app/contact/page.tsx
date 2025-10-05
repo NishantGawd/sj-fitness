@@ -25,8 +25,8 @@ export default function ContactPage() {
     <div className="bg-background text-foreground min-h-screen">
       {/* Hero Section */}
       <section
-        className="relative h-[91vh] bg-cover bg-bottom flex items-center justify-center text-center"
-        style={{ backgroundImage: "url('/sergey-zolkin-_UeY8aTI6d0-unsplash.jpg')" }}
+        className="relative h-[91vh] bg-cover bg-center flex items-center justify-center text-center"
+        style={{ backgroundImage: "url('/contact-hero.jpg')" }}
       >
         <div className="absolute inset-0 bg-black/60"></div>
         <motion.div
@@ -35,9 +35,9 @@ export default function ContactPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight">Get In Touch</h1>
-          <p className="mt-6 text-xl md:text-2xl text-brand-yellow font-medium">
-            Ready to transform your life? Let&apos;s start the conversation.
+          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-white uppercase"> Get In <span className="text-brand-yellow">Touch</span></h1>
+          <p className="mt-4 text-base md:text-lg text-gray-200">
+           Questions, memberships, or tours — we’re here to help you get started.
           </p>
         </motion.div>
       </section>

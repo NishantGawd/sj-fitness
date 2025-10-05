@@ -7,6 +7,16 @@ import { Mail, Phone, User, ArrowRight, MapPin, Calendar, Clock, CheckCircle } f
 import Image from "next/image"
 import { useToast } from "@/hooks/use-toast"
 
+const RadioButton = ({ isSelected }: { isSelected: boolean }) => (
+  <div
+    className={`w-6 h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-colors duration-200 ${
+      isSelected ? "border-brand-yellow" : "border-muted-foreground"
+    }`}
+  >
+    {isSelected && <div className="w-3 h-3 bg-brand-yellow rounded-full" />}
+  </div>
+);
+
 const InputField = ({
   icon: Icon,
   type,
@@ -65,17 +75,8 @@ const BranchCard = ({
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
   >
-    {isSelected && (
-      <motion.div
-        className="absolute top-4 right-4"
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ type: "spring", stiffness: 200 }}
-      >
-        <CheckCircle className="w-6 h-6 text-brand-yellow" />
-      </motion.div>
-    )}
     <div className="flex items-start space-x-3 mb-4">
+      <RadioButton isSelected={isSelected} />
       <MapPin className={`w-5 h-5 mt-1 ${isSelected ? "text-brand-yellow" : "text-zinc-400"}`} />
       <div>
         <h3 className={`font-semibold text-lg ${isSelected ? "text-brand-yellow" : "text-white"}`}>{title}</h3>
@@ -101,9 +102,9 @@ export default function AuthForm() {
 
   const branches = [
     {
-      id: "vaisali",
-      title: "SJ Fitness Vaisali Nagar",
-      address: "Vaisali Nagar, Jaipur, Rajasthan",
+      id: "Vaishali",
+      title: "SJ Fitness Vaishali Nagar",
+      address: "Vaishali Nagar, Jaipur, Rajasthan",
       features: ["Modern Equipment", "Personal Training", "Group Classes", "Nutrition Guidance"],
     },
     {
@@ -126,7 +127,7 @@ export default function AuthForm() {
     const phone = String(formData.get("phone") || "");
     const date = String(formData.get("preferred-date") || "");
     const time = String(formData.get("preferred-time") || "");
-    const branchName = selectedBranch === "vaisali" ? "Vaisali Nagar" : "Gandhi Path";
+    const branchName = selectedBranch === "Vaishali" ? "Vaishali Nagar" : "Gandhi Path";
 
     try {
         // --- STEP 1: SAVE THE TRIAL DATA TO THE DATABASE ---
@@ -300,7 +301,7 @@ export default function AuthForm() {
                 >
                   Fill in your details to claim your free trial at{" "}
                   <span className="text-brand-yellow font-medium">
-                    {selectedBranch === "vaisali" ? "SJ Fitness Vaisali Nagar" : "SJ Fitness Gandhi Path"}
+                    {selectedBranch === "Vaishali" ? "SJ Fitness Vaishali Nagar" : "SJ Fitness Gandhi Path"}
                   </span>
                 </motion.p>
               </div>

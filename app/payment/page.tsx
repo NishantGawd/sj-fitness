@@ -469,7 +469,7 @@ function PaymentForm() {
                         <SelectValue placeholder="Select your preferred branch" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="vaisali-nagar">SJ Fitness - Vaisali Nagar</SelectItem>
+                        <SelectItem value="Vaishali-nagar">SJ Fitness - Vaishali Nagar</SelectItem>
                         <SelectItem value="gandhi-path">SJ Fitness - Gandhi Path, Jaipur</SelectItem>
                       </SelectContent>
                     </Select>
@@ -689,7 +689,7 @@ function PaymentForm() {
                       </div>
                       <div className="flex justify-between">
                         <span>Branch:</span>
-                        <span>{form.branch === "vaisali-nagar" ? "Vaisali Nagar" : "Gandhi Path"}</span>
+                        <span>{form.branch === "Vaishali-nagar" ? "Vaishali Nagar" : "Gandhi Path"}</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Payment Type:</span>
