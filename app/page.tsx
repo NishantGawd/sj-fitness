@@ -2,8 +2,8 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { motion, easeOut } from "framer-motion"
-import { Dumbbell, Zap, HeartPulse, Users, Volume2, VolumeX, ChevronLeft, ChevronRight } from "lucide-react"
+import { motion, AnimatePresence, easeOut } from "framer-motion"
+import { Dumbbell, Zap, HeartPulse, Users, Volume2, VolumeX, Images, Video, X } from "lucide-react"
 import { useEffect, useState, useRef, useMemo } from "react"
 
 // --- Reusable Motion Variants ---
@@ -24,48 +24,21 @@ type VideoTestimonial = {
 }
 
 const videoTestimonials: VideoTestimonial[] = [
-  {
-    src: "/sjfitness_videos/testimonials/1.mp4",
-    poster: "/sjfitness_videos/testimonials/1.jpg",
-    name: "Yatharth Sharma",
-  },
-  {
-    src: "/sjfitness_videos/testimonials/2.mp4",
-    poster: "/sjfitness_videos/testimonials/2.jpg",
-    name: "Vinay Sharma",
-    
-  },
-  {
-    src: "/sjfitness_videos/testimonials/3.mp4",
-    poster: "/sjfitness_videos/testimonials/3.jpg",
-    name: "Kavya Gupta",
-  },
-  {
-    src: "/sjfitness_videos/testimonials/4.mp4",
-    poster: "/sjfitness_videos/testimonials/4.jpg",
-    name: "Rawat Dewani",
-  },
-  {
-    src: "/sjfitness_videos/testimonials/5.mp4",
-    poster: "/sjfitness_videos/testimonials/5.jpg",
-    name: "Anil Sharma & Priyanka Sharma",
-  },
-  {
-    src: "/sjfitness_videos/testimonials/6.mp4",
-    poster: "/sjfitness_videos/testimonials/6.jpg",
-    name: "Sachit",
-  },
-  {
-    src: "/sjfitness_videos/testimonials/7.mp4",
-    poster: "/sjfitness_videos/testimonials/7.jpg",
-    name: "Yukta",
-  },
-  {
-    src: "/sjfitness_videos/testimonials/8.mp4",
-    poster: "/sjfitness_videos/testimonials/8.jpg",
-    name: "Yash",
-  },
+  { src: "/sjfitness_videos/testimonials/1.mp4", poster: "/sjfitness_videos/testimonials/1.jpg", name: "Yatharth Sharma" },
+  { src: "/sjfitness_videos/testimonials/2.mp4", poster: "/sjfitness_videos/testimonials/2.jpg", name: "Vinay Sharma" },
+  { src: "/sjfitness_videos/testimonials/3.mp4", poster: "/sjfitness_videos/testimonials/3.jpg", name: "Kavya Gupta" },
+  { src: "/sjfitness_videos/testimonials/4.mp4", poster: "/sjfitness_videos/testimonials/4.jpg", name: "Rawat Dewani" },
+  { src: "/sjfitness_videos/testimonials/5.mp4", poster: "/sjfitness_videos/testimonials/5.jpg", name: "Anil Sharma & Priyanka Sharma" },
+  { src: "/sjfitness_videos/testimonials/6.mp4", poster: "/sjfitness_videos/testimonials/6.jpg", name: "Sachit" },
+  { src: "/sjfitness_videos/testimonials/7.mp4", poster: "/sjfitness_videos/testimonials/7.jpg", name: "Yukta" },
+  { src: "/sjfitness_videos/testimonials/8.mp4", poster: "/sjfitness_videos/testimonials/8.jpg", name: "Yash" },
 ]
+
+// --- Helper function for classnames ---
+function cn(...classes: Array<string | undefined | false>) {
+  return classes.filter(Boolean).join(" ")
+}
+
 
 // --- Home Page Component ---
 export default function HomePage() {
@@ -91,7 +64,6 @@ export default function HomePage() {
   useEffect(() => {
     if (!videoRef.current) return
     videoRef.current.muted = muted
-    // Attempt autoplay after changing source
     const play = async () => {
       try {
         await videoRef.current?.play()
@@ -115,7 +87,6 @@ export default function HomePage() {
           muted
           playsInline
           className="absolute top-1/2 left-1/2 w-full h-full object-cover -translate-x-1/2 -translate-y-1/2 z-0"
-          poster="https://images.unsplash.com/photo-1571902943202-507ec2618e8f?q=80&w=2575&auto=format&fit=crop"
         >
           <source src="/mixkit-fitness-man-lifting-weights-at-the-gym-14661-hd-ready.mp4" type="video/mp4" />
 
@@ -162,26 +133,10 @@ export default function HomePage() {
           </p>
           <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
             {[
-              {
-                icon: Dumbbell,
-                title: "Premium Equipment",
-                desc: "Industry-leading machines and free weights for optimal training results and safety.",
-              },
-              {
-                icon: HeartPulse,
-                title: "Certified Trainers",
-                desc: "Experienced fitness professionals committed to helping you achieve sustainable results.",
-              },
-              {
-                icon: Zap,
-                title: "Diverse Programs",
-                desc: "From high-intensity workouts to mindful movement – find your perfect fitness match.",
-              },
-              {
-                icon: Users,
-                title: "Supportive Community",
-                desc: "Join a welcoming family of fitness enthusiasts who motivate and inspire each other.",
-              },
+              { icon: Dumbbell, title: "Premium Equipment", desc: "Industry-leading machines and free weights for optimal training results and safety." },
+              { icon: HeartPulse, title: "Certified Trainers", desc: "Experienced fitness professionals committed to helping you achieve sustainable results." },
+              { icon: Zap, title: "Diverse Programs", desc: "From high-intensity workouts to mindful movement – find your perfect fitness match." },
+              { icon: Users, title: "Supportive Community", desc: "Join a welcoming family of fitness enthusiasts who motivate and inspire each other." },
             ].map((feature, index) => (
               <div
                 key={index}
@@ -217,9 +172,9 @@ export default function HomePage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[60vh]">
             {[
-              { name: "CrossFit", img: "https://images.unsplash.com/photo-1601422407692-ec4eeec1d9b3?q=80&w=1025&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
-              { name: "Yoga", img: "https://images.unsplash.com/photo-1575052814086-f385e2e2ad1b?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
-              { name: "Strength", img: "https://images.unsplash.com/photo-1739430548335-6b3e76ddbd10?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" },
+              { name: "CrossFit", img: "https://images.unsplash.com/photo-1601422407692-ec4eeec1d9b3?q=80&w=1025&auto=format&fit=crop" },
+              { name: "Yoga", img: "https://images.unsplash.com/photo-1575052814086-f385e2e2ad1b?q=80&w=1170&auto=format&fit=crop" },
+              { name: "Strength", img: "/strength2.jpg" },
             ].map((cls) => (
               <Link href="/classes" key={cls.name} className="group relative rounded-lg overflow-hidden shadow-2xl">
                 <Image
@@ -237,9 +192,46 @@ export default function HomePage() {
         </div>
       </motion.section>
 
+      <motion.section
+        className="py-20 px-4"
+        variants={sectionVariant}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+      >
+        <div className="container mx-auto">
+           <div className="max-w-3xl mx-auto">
+              <div className="bg-card group rounded-xl shadow-xl overflow-hidden md:grid md:grid-cols-2 md:items-center transition-all duration-300 hover:shadow-2xl border border-transparent">
+                  <div className="relative h-64 md:h-full overflow-hidden">
+                      <img
+                          src="https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?q=80&w=1287&auto=format&fit=crop"
+                          alt="A vibrant and healthy meal with fruits and vegetables"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-in-out"
+                      />
+                       <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                  </div>
+                  <div className="p-6 md:p-10 text-center md:text-left">
+                      <h2 className="text-2xl md:text-3xl font-extrabold uppercase">
+                          Fuel Your <span className="text-brand-yellow">Results</span>
+                      </h2>
+                      <p className="mt-4 text-muted-foreground max-w-lg mx-auto md:mx-0">
+                          Achieving your fitness goals isn&apos;t just about the workout. Our expert nutrition guidance is tailored to complement your training.
+                      </p>
+                      <a
+                          href="/nutrition"
+                          className="mt-6 inline-block bg-brand-yellow text-zinc-900 font-bold py-2.5 px-6 rounded-md text-sm uppercase hover:bg-opacity-90 transition-all duration-300 transform hover:scale-105 shadow-[0_5px_20px_-5px_rgba(255,215,0,0.5)]"
+                      >
+                          Explore Nutrition Guidance
+                      </a>
+                  </div>
+              </div>
+            </div>
+        </div>
+      </motion.section>
+
       {/* Video Testimonials (auto-advance, mute toggle) */}
       <motion.section
-        className="py-20 px-4 bg-card"
+        className="py-20 px-4"
         variants={sectionVariant}
         initial="hidden"
         whileInView="visible"
@@ -247,7 +239,7 @@ export default function HomePage() {
       >
         <div className="container mx-auto max-w-4xl">
           <h2 className="text-center text-3xl md:text-4xl font-extrabold uppercase mb-8">
-            Member <span className="text-(--color-brand-yellow)">Stories</span>
+            Member <span className="text-brand-yellow">Stories</span>
           </h2>
 
           <div className="relative overflow-hidden rounded-xl border border-border bg-background shadow-sm">
@@ -265,23 +257,10 @@ export default function HomePage() {
                 className="h-full w-full object-contain bg-black"
                 onEnded={handleEnded}
               />
-              {/* Controls */}
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-black/0 to-black/40" />
               <div className="absolute inset-x-0 top-0 p-3 flex justify-between">
-                 <button
-                    type="button"
-                    onClick={handlePrevious}
-                    className="rounded-md bg-black/60 px-2 py-1 text-xs text-white backdrop-blur hover:bg-black/70"
-                  >
-                    Previous
-                  </button>
-                 <button
-                    type="button"
-                    onClick={handleNext}
-                    className="rounded-md bg-black/60 px-2 py-1 text-xs text-white backdrop-blur hover:bg-black/70"
-                  >
-                    Next
-                  </button>
+                 <button type="button" onClick={handlePrevious} className="rounded-md bg-black/60 px-2 py-1 text-xs text-white backdrop-blur hover:bg-black/70">Previous</button>
+                 <button type="button" onClick={handleNext} className="rounded-md bg-black/60 px-2 py-1 text-xs text-white backdrop-blur hover:bg-black/70">Next</button>
               </div>
               <div className="absolute inset-x-0 bottom-0 p-4 flex items-center justify-between">
                 <div className="pointer-events-none">
@@ -298,19 +277,10 @@ export default function HomePage() {
                   <span className="text-sm">{muted ? "Sound off" : "Sound on"}</span>
                 </button>
               </div>
-              {/* Next indicator (clickable overlay top-right) */}
-              <button
-                type="button"
-                onClick={handleEnded}
-                className="absolute right-3 top-3 rounded-md bg-black/60 px-2 py-1 text-xs text-white backdrop-blur hover:bg-black/70"
-              >
-                Next
-              </button>
             </div>
-            {/* Progress strip of videos */}
             <div className="relative">
               <div
-                className="flex gap-2 p-3 overflow-x-auto snap-x snap-mandatory scrollbar-none"
+                className="flex gap-2 p-3 overflow-x-auto snap-x snap-mandatory"
                 style={{ scrollBehavior: "smooth" }}
               >
               {videoTestimonials.map((v, i) => (
@@ -319,7 +289,7 @@ export default function HomePage() {
                   onClick={() => setIndex(i)}
                   className={cn(
                     "group relative h-14 w-24 shrink-0 overflow-hidden rounded-md border snap-start",
-                    i === index ? "border-(--color-brand-yellow)" : "border-border",
+                    i === index ? "border-brand-yellow ring-2 ring-brand-yellow" : "border-border",
                   )}
                 >
                   <Image
@@ -333,17 +303,12 @@ export default function HomePage() {
                 </button>
               ))}
               </div>
-              {videoTestimonials.length > 3 && (
-                <>
-                  
-                </>
-              )}
             </div>
           </div>
         </div>
       </motion.section>
 
-      {/* 5. Final CTA Section */}
+      {/* 6. Final CTA Section */}
       <section className="py-20 px-4 bg-brand-yellow text-zinc-900">
         <div className="container mx-auto text-center">
           <h2 className="text-3xl md:text-5xl font-extrabold uppercase tracking-tight">
@@ -361,10 +326,7 @@ export default function HomePage() {
           </Link>
         </div>
       </section>
+
     </div>
   )
-}
-
-function cn(...classes: Array<string | undefined | false>) {
-  return classes.filter(Boolean).join(" ")
 }

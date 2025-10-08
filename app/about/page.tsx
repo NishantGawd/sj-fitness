@@ -7,25 +7,28 @@ import { Award, Users, Target, Heart } from "lucide-react"
 
 const trainers = [
   {
-    name: "MIA STONES",
-    role: "Strength & Conditioning Specialist",
-    img: "https://images.unsplash.com/photo-1594381898411-846e7d193883?q=80&w=2574&auto=format&fit=crop",
-    bio: "NASM-certified with 8+ years transforming lives through strength training.",
-    certifications: "NASM-CPT, CSCS",
+    name: "Wasim Khan",
+    role: "Personal Trainer",
+    img: "/sjfitness_images/trainer1.jpg",
+    bio: "6+ years of experience as a muscle gaining and fat loss expert transforming lives through strength training.",
   },
   {
-    name: "JASON GRIMES",
-    role: "Yoga & Mindfulness Coach",
-    img: "/professional-fitness-trainer-headshot.jpg",
-    bio: "RYT-500 instructor helping members find balance, flexibility, and inner strength.",
-    certifications: "RYT-500, Meditation Certified",
+    name: "Rahul Chawariya",
+    role: "Personal Trainer",
+    img: "/sjfitness_images/trainer2.jpg",
+    bio: "4+ years of experience as a weight gain and fat loss training expert transforming lives.",
   },
   {
     name: "DAVID CHEN",
     role: "CrossFit & HIIT Expert",
-    img: "/professional-fitness-coach-headshot.jpg",
+    img: "/sjfitness_images/trainer3.jpg",
     bio: "CrossFit Level 3 trainer specializing in functional fitness and metabolic conditioning.",
-    certifications: "CF-L3, HIIT Specialist",
+  },
+  {
+    name: "Ayan khan",
+    role: "Personal Trainer",
+    img: "/sjfitness_images/trainer4.jpg",
+    bio: "2+ years of experience as a strenght training expert transforming lives.",
   },
 ]
 
@@ -157,7 +160,6 @@ export default function AboutPage() {
                   <h3 className="text-xl font-bold mb-1">{trainer.name}</h3>
                   <p className="text-brand-yellow font-semibold mb-2">{trainer.role}</p>
                   <p className="text-muted-foreground text-sm mb-3">{trainer.bio}</p>
-                  <div className="text-xs text-muted-foreground font-medium">{trainer.certifications}</div>
                 </div>
               </motion.div>
             ))}

@@ -7,7 +7,6 @@ export async function POST(req: Request) {
     let body: any = {}
     try {
       body = await req.json()
-      console.log("[OneTime API] Incoming request body:", body)
     } catch (err) {
       console.error("[OneTime API] Failed to parse request body:", err)
       return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 })
@@ -30,7 +29,6 @@ export async function POST(req: Request) {
       console.error("[OneTime API] RESEND_API_KEY not set in environment")
       return NextResponse.json({ error: "RESEND_API_KEY not set" }, { status: 500 })
     }
-    console.log("[OneTime API] Using FROM address:", from)
 
     // Step 4: Build HTML email
     let html: string
@@ -46,14 +44,11 @@ export async function POST(req: Request) {
         paymentId,
         mode: mode || "one-time",
       })
-      console.log("[OneTime API] Successfully built HTML email")
     } catch (err) {
       console.error("[OneTime API] Error building email HTML:", err)
       return NextResponse.json({ error: "Failed to build email template" }, { status: 500 })
     }
 
-    // Step 5: Send to Resend API
-    console.log("[OneTime API] Sending email via Resend API...")
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -75,7 +70,7 @@ export async function POST(req: Request) {
     }
 
     const data = await res.json()
-    console.log("[OneTime API] Email sent successfully:", data)
+    console.log("Email sent successfully:", data)
     return NextResponse.json({ ok: true, id: data?.id })
   } catch (e: any) {
     console.error("[OneTime API] Unexpected server error:", e)

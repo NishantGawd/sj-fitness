@@ -1,8 +1,8 @@
 "use client"
 
-import { useCallback, useMemo, useState, useEffect, Suspense } from "react"
+import { useCallback, useMemo, useState, useEffect, Suspense, useRef } from "react"
 import { AnimatePresence, motion } from "framer-motion"
-import { Building2, Check, CreditCard, Shield, Star, Wallet } from "lucide-react"
+import { Building2, Check, CreditCard, Shield, Star, Wallet, X, Copy } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -84,6 +84,95 @@ function PaymentForm() {
     setForm((prev) => ({ ...prev, [key]: value }))
   }
 
+  // -----------------------------
+  // WhatsApp modal state + utils
+  // -----------------------------
+  const [showWhatsappModal, setShowWhatsappModal] = useState(false)
+  const [joiningName, setJoiningName] = useState("")
+  const modalRef = useRef<HTMLDivElement | null>(null)
+
+  // placeholder — replace with your own link later
+  const WHATSAPP_JOIN_LINK = "https://chat.whatsapp.com/examplePlaceholderJoinLink"
+  const QR_SRC = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(WHATSAPP_JOIN_LINK)}&size=300x300`
+
+  // theme detection: light / dark (detects html.dark class)
+  const [theme, setTheme] = useState<"light" | "dark">(
+    typeof document !== "undefined" && document.documentElement.classList.contains("dark") ? "dark" : "light"
+  )
+
+  useEffect(() => {
+    if (typeof document === "undefined") return
+    const html = document.documentElement
+    const observer = new MutationObserver(() => {
+      setTheme(html.classList.contains("dark") ? "dark" : "light")
+    })
+    observer.observe(html, { attributes: true, attributeFilter: ["class"] })
+    // initial set
+    setTheme(html.classList.contains("dark") ? "dark" : "light")
+    return () => observer.disconnect()
+  }, [])
+
+  // show modal only once per user (first-time purchaser). Use localStorage guard.
+  const showPostPaymentModal = useCallback((name?: string) => {
+    try {
+      const alreadyShown = localStorage.getItem("sj_whatsapp_modal_shown_v1")
+      if (!alreadyShown) {
+        localStorage.setItem("sj_whatsapp_modal_shown_v1", "true")
+        setJoiningName(name || `${form.firstName} ${form.lastName}`.trim())
+        // small delay to allow toasts to appear (so they render above modal if configured)
+        setTimeout(() => setShowWhatsappModal(true), 180)
+      } else {
+        // if already shown, just redirect home
+        setTimeout(() => router.push("/"), 300)
+      }
+    } catch (e) {
+      // fallback: show modal if localStorage fails
+      setJoiningName(name || `${form.firstName} ${form.lastName}`.trim())
+      setTimeout(() => setShowWhatsappModal(true), 180)
+    }
+  }, [form.firstName, form.lastName, router])
+
+  // close and redirect home after exit animation
+  const closeModalAndGoHome = useCallback(() => {
+    setShowWhatsappModal(false)
+    setTimeout(() => {
+      router.push("/")
+    }, 320)
+  }, [router])
+
+  // copy join link
+  const copyJoinLink = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(WHATSAPP_JOIN_LINK)
+      toast({ title: "Link copied", description: "WhatsApp group link copied to clipboard." })
+    } catch {
+      toast({ title: "Copy failed", description: "Couldn't copy the link. Please copy manually.", variant: "destructive" })
+    }
+  }, [WHATSAPP_JOIN_LINK, toast])
+
+  // prevent body scroll when modal open
+  useEffect(() => {
+    if (showWhatsappModal) {
+      document.body.style.overflow = "hidden"
+    } else {
+      document.body.style.overflow = ""
+    }
+  }, [showWhatsappModal])
+
+  // allow Escape to close modal
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && showWhatsappModal) {
+        closeModalAndGoHome()
+      }
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [showWhatsappModal, closeModalAndGoHome])
+
+  // -----------------------------
+  // Checkout logic (unchanged behavior, only showing modal on success)
+  // -----------------------------
   const startCheckout = useCallback(async () => {
     setIsStartingCheckout(true)
     try {
@@ -199,7 +288,9 @@ function PaymentForm() {
                   }),
                 )
               setCurrentStep(2)
-              setTimeout(() => router.push("/"), 1200)
+
+              // <-- NEW: Show the WhatsApp modal (first-time only internally handled)
+              showPostPaymentModal(fullName)
             } else {
               toast({
                 title: "Verification failed",
@@ -305,7 +396,9 @@ function PaymentForm() {
                   }),
                 )
               setCurrentStep(2)
-              setTimeout(() => router.push("/"), 1200)
+
+              // <-- NEW: Show the WhatsApp modal (first-time only internally handled)
+              showPostPaymentModal(`${form.firstName} ${form.lastName}`.trim())
             } else {
               toast({
                 title: "Verification failed",
@@ -335,7 +428,7 @@ function PaymentForm() {
     } finally {
       setIsStartingCheckout(false)
     }
-  }, [form, selectedPlan, payMode, selected.price, toast])
+  }, [form, selectedPlan, payMode, selected.price, toast, showPostPaymentModal])
 
   return (
     <div className="min-h-screen bg-background">
@@ -728,6 +821,119 @@ function PaymentForm() {
           )}
         </AnimatePresence>
       </div>
+
+      {/* ---------------------------
+          WhatsApp Join Modal (NEW)
+         --------------------------- */}
+      <AnimatePresence>
+        {showWhatsappModal && (
+          // backdrop container (kept z lower intentionally so toasts can appear above)
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18 }}
+            className="fixed inset-0 z-30 flex items-center justify-center pointer-events-auto"
+            aria-hidden={false}
+            role="dialog"
+          >
+            {/* backdrop (clicking backdrop closes modal and routes home) */}
+            <div
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+              onClick={closeModalAndGoHome}
+              aria-hidden="true"
+            />
+            <motion.div
+              ref={modalRef}
+              initial={{ scale: 0.96, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.96, opacity: 0 }}
+              transition={{ type: "spring", bounce: 0.12, duration: 0.28 }}
+              className={`relative z-40 w-full max-w-md mx-4 rounded-2xl overflow-hidden shadow-2xl ring-1 ring-black/6 ${
+                theme === "dark" ? "bg-gray-900 text-gray-100 ring-gray-700" : "bg-white text-gray-900 ring-gray-100"
+              }`}
+              aria-modal="true"
+              aria-label="Join SJ Fitness WhatsApp Group"
+              role="dialog"
+            >
+              {/* header */}
+              <div className="flex items-center justify-between px-5 py-3 border-b" >
+                <div>
+                  <h3 className="text-lg font-semibold">Join SJ Fitness Official WhatsApp Group</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">Important updates, schedule changes & announcements.</p>
+                </div>
+                <button
+                  onClick={closeModalAndGoHome}
+                  aria-label="Close modal and go to home"
+                  className="p-2 rounded-md hover:bg-muted/60 transition"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* body */}
+              <div className="px-5 py-4 space-y-4">
+                <div className="flex items-start gap-4">
+                  <img
+                    src={QR_SRC}
+                    alt="WhatsApp group QR code"
+                    width={96}
+                    height={96}
+                    className="w-24 h-24 rounded-md object-cover border"
+                  />
+                  <div className="flex-1">
+                    <p className="text-sm">
+                      Hi <span className="font-medium">{joiningName || "Member"}</span> — join our WhatsApp group to receive
+                      important updates, class cancellations, and exclusive offers.
+                    </p>
+                    <div className="mt-3 flex flex-col sm:flex-row gap-2">
+                      <a
+                        href={WHATSAPP_JOIN_LINK}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center justify-center px-4 py-2 rounded-md bg-[#25D366] text-white font-semibold shadow-sm hover:opacity-95 transition"
+                      >
+                        Join Group
+                      </a>
+                      <button
+                        onClick={copyJoinLink}
+                        className="inline-flex items-center justify-center px-4 py-2 rounded-md border shadow-sm hover:bg-muted/40 transition"
+                      >
+                        <Copy className="w-4 h-4 mr-2" /> Copy Link
+                      </button>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Or scan the QR code with your phone's camera to join instantly.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-2">
+                  <div className="text-xs text-muted-foreground">
+                    <strong>Note:</strong> By joining the group you agree to receive messages from SJ Fitness about schedules and offers.
+                  </div>
+                </div>
+              </div>
+
+              {/* footer */}
+              <div className="flex items-center justify-end gap-3 px-5 py-3 border-t">
+                <button
+                  onClick={closeModalAndGoHome}
+                  className="px-4 py-2 rounded-md hover:bg-muted/40 transition"
+                >
+                  Maybe later
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Developer note:
+          - Modal backdrop container uses z-30 and modal content z-40 intentionally.
+            If your toast implementation still appears below the modal, raise the toast container z-index,
+            e.g., to z-[9999] in your toast component. We keep modal z lower so toasts can show above it.
+      */}
     </div>
   )
 }
