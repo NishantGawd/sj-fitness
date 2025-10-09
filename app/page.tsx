@@ -320,7 +320,7 @@ export default function HomePage() {
           </p>
           <Link
             href="/join"
-            className="mt-8 inline-block bg-black text-white font-bold py-4 px-10 rounded-md text-lg uppercase hover:bg-primary/90 transition-colors duration-300 transform hover:scale-105"
+            className="mt-10 inline-block bg-black text-white font-bold py-4 px-10 rounded-md text-lg uppercase hover:bg-opacity-90 transition-all duration-300 transform hover:scale-105"
           >
             Begin Your Transformation
           </Link>

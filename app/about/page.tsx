@@ -19,10 +19,10 @@ const trainers = [
     bio: "4+ years of experience as a weight gain and fat loss training expert transforming lives.",
   },
   {
-    name: "DAVID CHEN",
-    role: "CrossFit & HIIT Expert",
+    name: "Mohsin Mansoori",
+    role: "Personal Trainer",
     img: "/sjfitness_images/trainer3.jpg",
-    bio: "CrossFit Level 3 trainer specializing in functional fitness and metabolic conditioning.",
+    bio: "6+ years of experience as a strenght training expert transforming lives.",
   },
   {
     name: "Ayan khan",
