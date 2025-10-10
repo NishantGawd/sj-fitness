@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ai-sdk/google": "^2.0.19",
     "@headlessui/react": "^2.2.9",
     "@hookform/resolvers": "^3.10.0",
     "@prototyp/react-language-switcher": "^0.3.0",
@@ -42,6 +43,7 @@
     "@stripe/react-stripe-js": "4.0.2",
     "@stripe/stripe-js": "7.9.0",
     "@vercel/analytics": "1.3.1",
+    "ai": "^5.0.65",
     "autoprefixer": "^10.4.20",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -65,8 +67,7 @@
     "sonner": "^1.7.4",
     "tailwind-merge": "^3.3.1",
     "tailwindcss-animate": "^1.0.7",
-    "vaul": "^0.9.9",
-    "zod": "3.25.67"
+    "vaul": "^0.9.9"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.9",

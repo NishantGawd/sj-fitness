@@ -6,6 +6,7 @@ import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from "@/components/theme-provider"
+import { ChatbotWidget } from "@/components/ai/chatbot-widget"
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -33,6 +34,7 @@ export default function RootLayout({
         <Header />
         <main className="pt-16">{children}</main>
         <Toaster />
+        <ChatbotWidget />
         </ThemeProvider>
         <Footer />
       </body>
