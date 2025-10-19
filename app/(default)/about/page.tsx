@@ -3,29 +3,26 @@
 import Image from "next/image"
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { Award, Users, Target, Heart } from "lucide-react"
+import { Award, Users, Target, Heart, Play } from "lucide-react"
+import { useState, useRef } from "react"
 
 const trainers = [
   {
-    name: "Wasim Khan",
     role: "Personal Trainer",
     img: "/sjfitness_images/trainer1.jpg",
     bio: "6+ years of experience as a muscle gaining and fat loss expert transforming lives through strength training.",
   },
   {
-    name: "Rahul Chawariya",
     role: "Personal Trainer",
     img: "/sjfitness_images/trainer2.jpg",
     bio: "4+ years of experience as a weight gain and fat loss training expert transforming lives.",
   },
   {
-    name: "Mohsin Mansoori",
     role: "Personal Trainer",
     img: "/sjfitness_images/trainer3.jpg",
     bio: "6+ years of experience as a strenght training expert transforming lives.",
   },
   {
-    name: "Ayan khan",
     role: "Personal Trainer",
     img: "/sjfitness_images/trainer4.jpg",
     bio: "2+ years of experience as a strenght training expert transforming lives.",
@@ -40,6 +37,16 @@ const stats = [
 ]
 
 export default function AboutPage() {
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const [isPlaying, setIsPlaying] = useState(false)
+
+  const handlePlay = () => {
+    if (videoRef.current) {
+      videoRef.current.play()
+      setIsPlaying(true)
+    }
+  }
+
   return (
     <div className="bg-background text-foreground">
       <section className="relative h-[91vh] overflow-hidden">
@@ -140,7 +147,6 @@ export default function AboutPage() {
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {trainers.map((trainer, index) => (
               <motion.div
-                key={trainer.name}
                 className="bg-background border border-border rounded-2xl overflow-hidden group hover:shadow-2xl transition-all duration-500"
                 initial={{ opacity: 0, y: 50 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -150,20 +156,70 @@ export default function AboutPage() {
                 <div className="relative h-80 overflow-hidden">
                   <Image
                     src={trainer.img || "/placeholder.svg"}
-                    alt={trainer.name}
+                    alt= "Trainer Image"
                     fill
                     className="object-cover group-hover:scale-110 transition-transform duration-700"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                 </div>
                 <div className="p-6">
-                  <h3 className="text-xl font-bold mb-1">{trainer.name}</h3>
                   <p className="text-brand-yellow font-semibold mb-2">{trainer.role}</p>
                   <p className="text-muted-foreground text-sm mb-3">{trainer.bio}</p>
                 </div>
               </motion.div>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="py-20 px-4 bg-background">
+        <div className="container mx-auto">
+          <motion.div
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+          >
+            <h2 className="text-4xl font-bold text-foreground mb-4">
+              Step Inside Our <span className="text-brand-yellow">World</span>
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Hit play to get a feel for the energy, the equipment, and the community that makes SJ Fitness unique.
+            </p>
+          </motion.div>
+
+          <motion.div
+            className="max-w-5xl mx-auto"
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          >
+            <div className="relative aspect-video rounded-2xl overflow-hidden shadow-2xl border border-border group">
+              <video
+                ref={videoRef}
+                src="/hero-video.mp4"
+                className="w-full h-full object-cover"
+                controls={isPlaying}
+                playsInline
+                onEnded={() => setIsPlaying(false)}
+              >
+                Your browser does not support the video tag.
+              </video>
+
+              {!isPlaying && (
+                <div
+                  className="absolute inset-0 bg-black/40 flex items-center justify-center cursor-pointer transition-opacity duration-300"
+                  onClick={handlePlay}
+                >
+                  <div className="bg-white/20 backdrop-blur-sm p-5 sm:p-6 rounded-full group-hover:scale-110 transition-transform duration-300 ease-in-out shadow-lg">
+                    <Play className="w-10 h-10 sm:w-12 sm:h-12 text-white" fill="white" />
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
         </div>
       </section>
 

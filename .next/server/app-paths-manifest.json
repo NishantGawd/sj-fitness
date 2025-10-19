@@ -1,5 +1,9 @@
 {
-  "/page": "app/page.js",
-  "/api/chat/route": "app/api/chat/route.js",
-  "/api/transcript/route": "app/api/transcript/route.js"
+  "/join/page": "app/join/page.js",
+  "/api/leads/[leadId]/route": "app/api/leads/[leadId]/route.js",
+  "/api/chatbot-leads/route": "app/api/chatbot-leads/route.js",
+  "/api/leads/route": "app/api/leads/route.js",
+  "/api/email/day-pass/route": "app/api/email/day-pass/route.js",
+  "/(default)/page": "app/(default)/page.js",
+  "/(default)/classes/page": "app/(default)/classes/page.js"
 }

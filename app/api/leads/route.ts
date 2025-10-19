@@ -1,23 +1,28 @@
-import { NextResponse } from "next/server"
+import { neon } from '@neondatabase/serverless';
+import { NextResponse } from 'next/server';
 
-type Lead = {
-  name: string
-  phone: string
-  notes?: string
-  source?: string
-}
+const sql = neon(process.env.DATABASE_URL!);
 
-// NOTE: This is a stateless example (no DB). Replace with Neon/Upstash later.
 export async function POST(req: Request) {
   try {
-    const data = (await req.json()) as Lead
-    // In production, store the lead:
-    // - Neon (Postgres) via @neondatabase/serverless
-    // - Upstash Redis via REST API
-    // - Or send to a CRM webhook (HubSpot, Zapier, Make)
-    console.log("Lead received:", data)
-    return NextResponse.json({ ok: true })
-  } catch (e: any) {
-    return NextResponse.json({ error: "Invalid payload" }, { status: 400 })
+    const body = await req.json();
+    const { name, email, phone, branch, date, time } = body;
+
+    // Validate the final data
+    if (!name || !email || !phone || !branch) {
+      return NextResponse.json({ message: "Missing required fields for final submission" }, { status: 400 });
+    }
+
+    // Insert the confirmed lead into the permanent 'trials' table
+    await sql`
+      INSERT INTO trials (name, email, phone, branch, date, time) 
+      VALUES (${name}, ${email}, ${phone}, ${branch}, ${date}, ${time});
+    `;
+
+    return NextResponse.json({ message: "Trial booked successfully!" }, { status: 201 });
+
+  } catch (error) {
+    console.error("Error in /api/leads:", error);
+    return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
   }
 }

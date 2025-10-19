@@ -50,12 +50,12 @@ const services = [
 ]
 
 const galleryImages = [
-  { src: "/sjfitness_images/1.jpg", alt: "Gym interior with free weights and benches" },
-  { src: "/sjfitness_images/2.jpg", alt: "Group of people in a crossfit class" },
-  { src: "/sjfitness_images/3.jpg", alt: "Man doing a battle rope workout" },
-  { src: "/sjfitness_images/4.jpg", alt: "Woman lifting a barbell" },
-  { src: "/sjfitness_images/5.jpg", alt: "Man doing boxing training with a punching bag" },
-  { src: "/sjfitness_images/6.jpg", alt: "Row of treadmills in the gym" },
+  { src: "/sjfitness_images/1.jpg", alt: "SJ Fitness Gym Photo 1" },
+  { src: "/sjfitness_images/2.jpg", alt: "SJ Fitness Gym Photo 2" },
+  { src: "/sjfitness_images/3.jpg", alt: "SJ Fitness Gym Photo 3" },
+  { src: "/sjfitness_images/4.jpg", alt: "SJ Fitness Gym Photo 4" }, 
+  { src: "/sjfitness_images/5.jpg", alt: "SJ Fitness Gym Photo 5" },
+  { src: "/sjfitness_images/6.jpg", alt: "SJ Fitness Gym Photo 6" },
 ]
 
 const galleryVideos = [
@@ -64,21 +64,36 @@ const galleryVideos = [
   { src: "/sjfitness_videos/3.mp4", title: "Workout Clip 3" },
   { src: "/sjfitness_videos/4.mp4", title: "Workout Clip 4" },
   { src: "/sjfitness_videos/5.mp4", title: "Workout Clip 5" },
+  { src: "/sjfitness_videos/6.mp4", title: "Workout Clip 6" },
+  { src: "/sjfitness_videos/7.mp4", title: "Workout Clip 7" },
+  { src: "/sjfitness_videos/8.mp4", title: "Workout Clip 8" },
+  { src: "/sjfitness_videos/9.mp4", title: "Workout Clip 9" },
+  { src: "/sjfitness_videos/10.mp4", title: "Workout Clip 10" },
+  { src: "/sjfitness_videos/11.mp4", title: "Workout Clip 11" },
+  { src: "/sjfitness_videos/12.mp4", title: "Workout Clip 12" },
 ]
 
 function GymGallery({ triggerClass = "" }: { triggerClass?: string }) {
   const [isOpen, setIsOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<"images" | "videos">("images")
+  
+  // State for video player
   const [playerOpen, setPlayerOpen] = useState(false)
   const [currentVideo, setCurrentVideo] = useState<string | null>(null)
+  
+  // --- NEW: State for image lightbox ---
+  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [currentImage, setCurrentImage] = useState<{ src: string; alt: string } | null>(null)
+  
   const [isMounted, setIsMounted] = useState(false)
 
   useEffect(() => {
     setIsMounted(true)
   }, [])
 
+  // --- UPDATED: Lock body scroll when any modal is open ---
   useEffect(() => {
-    if (isOpen || playerOpen) {
+    if (isOpen || playerOpen || lightboxOpen) {
       document.body.style.overflow = "hidden"
     } else {
       document.body.style.overflow = "auto"
@@ -86,12 +101,16 @@ function GymGallery({ triggerClass = "" }: { triggerClass?: string }) {
     return () => {
       document.body.style.overflow = "auto"
     }
-  }, [isOpen, playerOpen])
+  }, [isOpen, playerOpen, lightboxOpen])
 
+  // --- UPDATED: Handle Escape key for all modals ---
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        if (playerOpen) {
+        if (lightboxOpen) {
+          setLightboxOpen(false)
+          setCurrentImage(null)
+        } else if (playerOpen) {
           setPlayerOpen(false)
           setCurrentVideo(null)
         } else if (isOpen) {
@@ -101,13 +120,19 @@ function GymGallery({ triggerClass = "" }: { triggerClass?: string }) {
     }
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
-  }, [isOpen, playerOpen])
+  }, [isOpen, playerOpen, lightboxOpen])
 
   const posterFor = (videoSrc: string) => videoSrc.replace(/\.mp4$/i, ".png")
 
   const openPlayer = (src: string) => {
     setCurrentVideo(src)
     setPlayerOpen(true)
+  }
+
+  // --- NEW: Function to open the image lightbox ---
+  const openLightbox = (image: { src: string; alt: string }) => {
+    setCurrentImage(image)
+    setLightboxOpen(true)
   }
 
   const galleryModal = (
@@ -153,10 +178,15 @@ function GymGallery({ triggerClass = "" }: { triggerClass?: string }) {
                   {activeTab === "images" ? (
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                       {galleryImages.map((image, idx) => (
-                        <div key={idx} className="relative aspect-video rounded-lg overflow-hidden group bg-muted">
-                          <img src={image.src} alt={image.alt} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                        // --- UPDATED: Changed from div to button and added onClick ---
+                        <button
+                          key={idx}
+                          onClick={() => openLightbox(image)}
+                          className="relative aspect-video rounded-lg overflow-hidden group bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 focus-visible:ring-offset-2 focus-visible:ring-offset-card"
+                        >
+                          <img src={image.src} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                           <div className="absolute inset-0 bg-black/6 group-hover:bg-black/10 transition-colors duration-300" />
-                        </div>
+                        </button>
                       ))}
                     </div>
                   ) : (
@@ -219,6 +249,49 @@ function GymGallery({ triggerClass = "" }: { triggerClass?: string }) {
           </motion.div>
         )}
       </AnimatePresence>
+  );
+
+  // --- NEW: JSX for the image lightbox modal ---
+  const imageLightboxModal = (
+    <AnimatePresence>
+      {lightboxOpen && currentImage && (
+        <motion.div
+          key="lightbox-backdrop"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.18 }}
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-4"
+          onClick={() => { setLightboxOpen(false); setCurrentImage(null); }}
+        >
+          <motion.div
+            key="lightbox-modal"
+            initial={{ scale: 0.98, y: 10, opacity: 0 }}
+            animate={{ scale: 1, y: 0, opacity: 1 }}
+            exit={{ scale: 0.98, y: 10, opacity: 0 }}
+            transition={{ duration: 0.22, ease: easeOut }}
+            className="relative w-full h-full max-w-7xl max-h-[90vh] flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => { setLightboxOpen(false); setCurrentImage(null); }}
+              aria-label="Close image view"
+              className="absolute top-3 right-3 z-20 p-2 rounded-full bg-black/30 hover:bg-black/50 transition-colors"
+            >
+              <X className="w-5 h-5 text-white" />
+            </button>
+            <img
+              src={currentImage.src}
+              alt={currentImage.alt}
+              className="max-w-full max-h-full object-contain rounded-lg"
+            />
+            <div className="pointer-events-none absolute bottom-0 left-0 right-0 p-4 text-center bg-gradient-to-t from-black/60 to-transparent">
+              <p className="text-white/90 text-sm drop-shadow-md">{currentImage.alt}</p>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   )
 
   return (
@@ -227,8 +300,10 @@ function GymGallery({ triggerClass = "" }: { triggerClass?: string }) {
         <Images className="w-5 h-5" />
       </button>
       
+      {/* --- UPDATED: Added the new image lightbox portal --- */}
       {isMounted && createPortal(galleryModal, document.body)}
       {isMounted && createPortal(videoPlayerModal, document.body)}
+      {isMounted && createPortal(imageLightboxModal, document.body)}
     </>
   )
 }

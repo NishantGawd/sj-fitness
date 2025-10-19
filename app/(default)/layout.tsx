@@ -1,0 +1,18 @@
+// app/(default)/layout.tsx
+
+import Header from "@/components/Header"
+import Footer from "@/components/Footer"
+
+export default function DefaultLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <>
+      <Header />
+      {children}
+      <Footer />
+    </>
+  )
+}

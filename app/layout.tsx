@@ -2,11 +2,10 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Poppins } from "next/font/google"
 import "./globals.css"
-import Header from "@/components/Header"
-import Footer from "@/components/Footer"
 import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from "@/components/theme-provider"
 import { ChatbotWidget } from "@/components/ai/chatbot-widget"
+import Header from "@/components/Header"
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -28,15 +27,14 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={poppins.variable}>
-      <body className="font-sans">
+    <html lang="en" className={poppins.variable} suppressHydrationWarning>
+      <body className="font-sans bg-background">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-        <Header />
-        <main className="pt-16">{children}</main>
-        <Toaster />
-        <ChatbotWidget />
+          <Header />
+          <main className="pt-16">{children}</main>
+          <Toaster />
+          <ChatbotWidget />
         </ThemeProvider>
-        <Footer />
       </body>
     </html>
   )

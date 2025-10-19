@@ -32,6 +32,9 @@ const videoTestimonials: VideoTestimonial[] = [
   { src: "/sjfitness_videos/testimonials/6.mp4", poster: "/sjfitness_videos/testimonials/6.jpg", name: "Sachit" },
   { src: "/sjfitness_videos/testimonials/7.mp4", poster: "/sjfitness_videos/testimonials/7.jpg", name: "Yukta" },
   { src: "/sjfitness_videos/testimonials/8.mp4", poster: "/sjfitness_videos/testimonials/8.jpg", name: "Yash" },
+  { src: "/sjfitness_videos/testimonials/9.mp4", poster: "/sjfitness_videos/testimonials/9.png", name: "Yash" },
+  { src: "/sjfitness_videos/testimonials/10.mp4", poster: "/sjfitness_videos/testimonials/10.png", name: "Yash" },
+  { src: "/sjfitness_videos/testimonials/11.mp4", poster: "/sjfitness_videos/testimonials/11.png", name: "Yash" },
 ]
 
 // --- Helper function for classnames ---
@@ -80,17 +83,24 @@ export default function HomePage() {
     <div className="bg-background text-foreground">
       {/* 1. Hero Section with Video Background */}
       <section className="relative h-[91vh] flex items-center justify-center text-center overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-full bg-black/60 z-10"></div>
+        {/* Dark overlay for better text readability */}
+        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-black/50 to-black/80 z-10"></div>
+
+        {/* Video Background */}
         <video
           autoPlay
           loop
           muted
           playsInline
-          className="absolute top-1/2 left-1/2 w-full h-full object-cover -translate-x-1/2 -translate-y-1/2 z-0"
+          // The key change is here: ensuring the video is always at least the full width and height of its container.
+          // This works with object-cover to responsively fill the space without black bars.
+          className="absolute top-1/2 left-1/2 min-w-full min-h-full w-auto h-auto object-cover -translate-x-1/2 -translate-y-1/2 z-0"
         >
           <source src="/mixkit-fitness-man-lifting-weights-at-the-gym-14661-hd-ready.mp4" type="video/mp4" />
-
+          Your browser does not support the video tag.
         </video>
+
+        {/* Content */}
         <motion.div
           className="relative z-20 px-4"
           initial={{ opacity: 0, scale: 0.8 }}
@@ -103,8 +113,7 @@ export default function HomePage() {
             <span className="text-brand-yellow">Potential</span>
           </h1>
           <p className="mt-6 text-lg md:text-xl max-w-2xl mx-auto text-gray-300">
-            Welcome to SJ Fitness – Jaipur&apos;s most trusted fitness community. Where every rep counts, every goal matters,
-            and your success is our mission.
+            Welcome to SJ Fitness – Jaipur&apos;s most trusted fitness community. Where every rep counts, every goal matters, and your success is our mission.
           </p>
           <Link
             href="/join"
@@ -114,6 +123,7 @@ export default function HomePage() {
           </Link>
         </motion.div>
       </section>
+
 
       {/* 2. "Why Us" Features Section */}
       <motion.section
@@ -152,7 +162,7 @@ export default function HomePage() {
         </div>
       </motion.section>
 
-      {/* 3. Class Showcase Section */}
+    {/* 3. Class Showcase Section */}
       <motion.section
         className="py-20 px-4 bg-card"
         variants={sectionVariant}
@@ -171,17 +181,22 @@ export default function HomePage() {
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[60vh]">
+            {/* --- UPDATED: Added a 'position' property to each object --- */}
             {[
-              { name: "CrossFit", img: "https://images.unsplash.com/photo-1601422407692-ec4eeec1d9b3?q=80&w=1025&auto=format&fit=crop" },
-              { name: "Yoga", img: "https://images.unsplash.com/photo-1575052814086-f385e2e2ad1b?q=80&w=1170&auto=format&fit=crop" },
-              { name: "Strength", img: "/strength2.jpg" },
+              { name: "CrossFit", img: "https://images.unsplash.com/photo-1601422407692-ec4eeec1d9b3?q=80&w=1025&auto=format&fit=crop", position: "object-center" },
+              { name: "Yoga", img: "https://images.unsplash.com/photo-1575052814086-f385e2e2ad1b?q=80&w=1170&auto=format&fit=crop", position: "object-center" },
+              { name: "Strength", img: "/strength2.jpg", position: "object-top" }, // This will fix the cropping
             ].map((cls) => (
               <Link href="/classes" key={cls.name} className="group relative rounded-lg overflow-hidden shadow-2xl">
                 <Image
                   src={cls.img || "/placeholder.svg"}
                   alt={cls.name}
                   fill
-                  className="object-cover group-hover:scale-110 transition-transform duration-500"
+                  // --- UPDATED: Added the conditional position class ---
+                  className={cn(
+                    "object-cover group-hover:scale-110 transition-transform duration-500",
+                    cls.position // This applies 'object-top' for the Strength image
+                  )}
                 />
                 <div className="absolute inset-0 bg-black/50 group-hover:bg-black/70 transition-colors duration-300 flex items-center justify-center">
                   <h3 className="text-3xl font-extrabold uppercase text-white tracking-widest">{cls.name}</h3>
