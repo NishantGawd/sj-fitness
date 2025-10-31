@@ -91,11 +91,9 @@ function PaymentForm() {
   const [joiningName, setJoiningName] = useState("")
   const modalRef = useRef<HTMLDivElement | null>(null)
 
-  // placeholder — replace with your own link later
-  const WHATSAPP_JOIN_LINK = "https://chat.whatsapp.com/examplePlaceholderJoinLink"
-  const QR_SRC = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(WHATSAPP_JOIN_LINK)}&size=300x300`
+  const WHATSAPP_JOIN_LINK = "https://wa.me/qr/7XUYNGVYEBQJD1"
+  const QR_SRC = "/whatsapp-qr.png"
 
-  // theme detection: light / dark (detects html.dark class)
   const [theme, setTheme] = useState<"light" | "dark">(
     typeof document !== "undefined" && document.documentElement.classList.contains("dark") ? "dark" : "light"
   )
@@ -119,14 +117,11 @@ function PaymentForm() {
       if (!alreadyShown) {
         localStorage.setItem("sj_whatsapp_modal_shown_v1", "true")
         setJoiningName(name || `${form.firstName} ${form.lastName}`.trim())
-        // small delay to allow toasts to appear (so they render above modal if configured)
         setTimeout(() => setShowWhatsappModal(true), 180)
       } else {
-        // if already shown, just redirect home
         setTimeout(() => router.push("/"), 300)
       }
     } catch (e) {
-      // fallback: show modal if localStorage fails
       setJoiningName(name || `${form.firstName} ${form.lastName}`.trim())
       setTimeout(() => setShowWhatsappModal(true), 180)
     }
@@ -859,7 +854,7 @@ function PaymentForm() {
               {/* header */}
               <div className="flex items-center justify-between px-5 py-3 border-b" >
                 <div>
-                  <h3 className="text-lg font-semibold">Join SJ Fitness Official WhatsApp Group</h3>
+                  <h3 className="text-lg font-semibold">Add SJ Fitness Official WhatsApp Contact</h3>
                   <p className="text-xs text-muted-foreground mt-0.5">Important updates, schedule changes & announcements.</p>
                 </div>
                 <button
@@ -883,7 +878,7 @@ function PaymentForm() {
                   />
                   <div className="flex-1">
                     <p className="text-sm">
-                      Hi <span className="font-medium">{joiningName || "Member"}</span> — join our WhatsApp group to receive
+                      Hi <span className="font-medium">{joiningName || "Member"}</span> — add our WhatsApp contact to receive
                       important updates, class cancellations, and exclusive offers.
                     </p>
                     <div className="mt-3 flex flex-col sm:flex-row gap-2">
@@ -893,7 +888,7 @@ function PaymentForm() {
                         rel="noreferrer"
                         className="inline-flex items-center justify-center px-4 py-2 rounded-md bg-[#25D366] text-white font-semibold shadow-sm hover:opacity-95 transition"
                       >
-                        Join Group
+                        Add Contact
                       </a>
                       <button
                         onClick={copyJoinLink}
@@ -903,14 +898,14 @@ function PaymentForm() {
                       </button>
                     </div>
                     <p className="text-xs text-muted-foreground mt-2">
-                      Or scan the QR code with your phone's camera to join instantly.
+                      Or scan the QR code with your phone's camera to add instantly.
                     </p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 gap-2">
                   <div className="text-xs text-muted-foreground">
-                    <strong>Note:</strong> By joining the group you agree to receive messages from SJ Fitness about schedules and offers.
+                    <strong>Note:</strong> By adding the contact you agree to receive messages from SJ Fitness about schedules and offers.
                   </div>
                 </div>
               </div>

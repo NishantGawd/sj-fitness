@@ -20,12 +20,12 @@ const trainers = [
   {
     role: "Personal Trainer",
     img: "/sjfitness_images/trainer3.jpg",
-    bio: "6+ years of experience as a strenght training expert transforming lives.",
+    bio: "6+ years of experience as a strength training expert transforming lives.",
   },
   {
     role: "Personal Trainer",
     img: "/sjfitness_images/trainer4.jpg",
-    bio: "2+ years of experience as a strenght training expert transforming lives.",
+    bio: "2+ years of experience as a strength training expert transforming lives.",
   },
 ]
 
@@ -199,8 +199,8 @@ export default function AboutPage() {
             <div className="relative aspect-video rounded-2xl overflow-hidden shadow-2xl border border-border group">
               <video
                 ref={videoRef}
-                src="/hero-video.mp4"
-                className="w-full h-full object-cover"
+                src="/main_gym.mov"
+                className="w-full h-full object-contain"
                 controls={isPlaying}
                 playsInline
                 onEnded={() => setIsPlaying(false)}

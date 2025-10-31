@@ -16,15 +16,35 @@
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
+    "/(default)/classes/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(default)/classes/page.js"
+    ],
+    "/(default)/about/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(default)/about/page.js"
+    ],
     "/join/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/join/page.js"
     ],
-    "/(default)/classes/page": [
+    "/(default)/cancel/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(default)/classes/page.js"
+      "static/chunks/app/(default)/cancel/page.js"
+    ],
+    "/(default)/membership/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(default)/membership/page.js"
+    ],
+    "/(default)/contact/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(default)/contact/page.js"
     ]
   }
 }

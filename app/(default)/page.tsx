@@ -92,11 +92,9 @@ export default function HomePage() {
           loop
           muted
           playsInline
-          // The key change is here: ensuring the video is always at least the full width and height of its container.
-          // This works with object-cover to responsively fill the space without black bars.
-          className="absolute top-1/2 left-1/2 min-w-full min-h-full w-auto h-auto object-cover -translate-x-1/2 -translate-y-1/2 z-0"
+          className="absolute top-0 left-1/2 min-w-full min-h-full w-auto h-auto object-cover -translate-x-1/2 z-0"
         >
-          <source src="/mixkit-fitness-man-lifting-weights-at-the-gym-14661-hd-ready.mp4" type="video/mp4" />
+          <source src="/hero-video1.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
 

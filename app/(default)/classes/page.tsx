@@ -77,7 +77,7 @@ const classTypes = [
     subtitle: "Strength Training",
     description: "Progressive overload, proper form, and full-body programming to build durable strength.",
     icon: AnimatedDumbbellIcon,
-    image: "/classes/strength.jpg",
+    image: "/strength2.jpg",
   },
   {
     title: "Groove Burn",
@@ -191,8 +191,9 @@ export default function ClassesPage() {
                     whileHover={{ scale: 1.025 }}
                   >
                     <div
-                      className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-in-out group-hover:scale-110"
-                      style={{ backgroundImage: `url(${classType.image})` }}
+                      className="absolute inset-0 bg-cover transition-transform duration-700 ease-in-out group-hover:scale-110"
+                      style={{ backgroundImage: `url(${classType.image})`,
+                               backgroundPosition: '30% 50%', }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/70 to-transparent" />
                     <div className="relative z-10 p-6 md:p-8 flex flex-col h-full justify-end text-white">
