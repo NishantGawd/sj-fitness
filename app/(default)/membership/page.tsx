@@ -84,15 +84,15 @@ const PLANS: Plan[] = [
     price: 3000,
     desc: "A flexible start to your fitness journey.",
     icon: Star,
-    features: ["Full Gym Access", "Standard Workout Plan", "Locker Facilities"],
+    features: ["Full Gym Access", "Standard Workout Plan", "Locker Facilities", "Monthly Outings", "Yoga | Zumba | HIIT |  Aerobics Classes"],
   },
   {
     key: "3m",
     label: "3 Months",
-    price: 6000,
+    price: 6500,
     desc: "Commit to consistency and see real results.",
     icon: Zap,
-    features: ["Everything in 1 Month", "1 Free Personal Training Session", "Access to Group Classes"],
+    features: ["Everything in 1 Month", "BCA Test", "Access to Group Classes", "Fitness Assessment"],
   },
   {
     key: "6m",
@@ -100,15 +100,15 @@ const PLANS: Plan[] = [
     price: 9000,
     desc: "A solid commitment for transformative change.",
     icon: Gem,
-    features: ["Everything in 3 Months", "Monthly Body Composition Analysis", "Priority Class Booking"],
+    features: ["Everything in 3 Months", "Monthly Body Composition Analysis"],
   },
   {
     key: "12m",
     label: "1 Year",
-    price: 13000,
+    price: 13500,
     desc: "The ultimate value for a dedicated lifestyle.",
     icon: Crown,
-    features: ["Everything in 6 Months", "2 Guest Passes Per Month", "10% Off on Merchandise"],
+    features: ["Everything in 6 Months", "10% Off on Merchandise"],
   },
 ]
 

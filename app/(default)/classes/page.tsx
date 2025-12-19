@@ -211,7 +211,7 @@ export default function ClassesPage() {
                         href="/join"
                         className="bg-white text-black font-bold py-3 px-6 rounded-full self-start hover:bg-brand-yellow transition-all duration-300 shadow-lg"
                       >
-                        View Schedule
+                        Book Trial Now
                       </a>
                     </div>
                   </motion.div>

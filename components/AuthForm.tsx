@@ -12,12 +12,15 @@ import {
   Calendar,
   Clock,
   CheckCircle,
-  AlertTriangle, // Added for better error display
+  AlertTriangle,
+  CreditCard,
+  Lock,
+  ChevronDown
 } from "lucide-react"
 import Image from "next/image"
 import { useToast } from "@/hooks/use-toast"
 
-// --- Helper Components (Slightly Updated for Controlled Inputs & Style) ---
+// --- Helper Components ---
 
 const RadioButton = ({ isSelected }: { isSelected: boolean }) => (
   <div
@@ -29,7 +32,6 @@ const RadioButton = ({ isSelected }: { isSelected: boolean }) => (
   </div>
 )
 
-// Updated to be a controlled component for pre-filling
 const InputField = ({
   icon: Icon,
   type,
@@ -111,7 +113,62 @@ const BranchCard = ({
   </motion.div>
 )
 
-// Main component logic moved here
+// --- Custom Hover Dropdown Component ---
+const HoverTimeSelect = ({ value, onChange }: { value: string, onChange: (val: string) => void }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  const options = [
+    { val: "morning", label: "Morning (6:00 AM - 10:00 AM)" },
+    { val: "afternoon", label: "Afternoon (10:00 AM - 4:00 PM)" },
+    { val: "evening", label: "Evening (4:00 PM - 10:00 PM)" }
+  ];
+
+  const getLabel = () => {
+    if (!value) return "Select preferred time";
+    return options.find(o => o.val === value)?.label;
+  };
+
+  return (
+    <div 
+      className="relative group" 
+      onMouseEnter={() => setIsOpen(true)} 
+      onMouseLeave={() => setIsOpen(false)}
+    >
+       <div className={`relative flex items-center w-full bg-input border border-input rounded-lg py-4 pl-12 pr-4 cursor-pointer transition-all duration-200 hover:border-input/80 ${isOpen ? 'ring-2 ring-brand-yellow/50 border-brand-yellow' : ''}`}>
+          <Clock className="absolute left-4 w-5 h-5 text-muted-foreground group-hover:text-brand-yellow transition-colors duration-200" />
+          <span className={`flex-1 ${value ? 'text-foreground' : 'text-muted-foreground'}`}>
+            {getLabel()}
+          </span>
+          <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+       </div>
+       
+       <AnimatePresence>
+         {isOpen && (
+           <motion.div
+             initial={{ opacity: 0, y: -10 }}
+             animate={{ opacity: 1, y: 0 }}
+             exit={{ opacity: 0, y: -10 }}
+             transition={{ duration: 0.15 }}
+             className="absolute z-50 top-full left-0 right-0 mt-2 bg-card border border-border rounded-lg shadow-xl overflow-hidden"
+           >
+             {options.map((opt) => (
+               <div 
+                 key={opt.val}
+                 onClick={() => { onChange(opt.val); setIsOpen(false); }}
+                 className={`px-4 py-3 cursor-pointer hover:bg-brand-yellow/10 hover:text-brand-yellow transition-colors text-sm ${value === opt.val ? 'bg-brand-yellow/20 text-brand-yellow font-medium' : 'text-foreground'}`}
+               >
+                 {opt.label}
+               </div>
+             ))}
+           </motion.div>
+         )}
+       </AnimatePresence>
+    </div>
+  );
+};
+
+// --- Main Component ---
+
 function AuthFormComponent() {
   const searchParams = useSearchParams()
   const leadId = searchParams.get('leadId')
@@ -121,14 +178,14 @@ function AuthFormComponent() {
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
 
-  // States for all form fields to enable pre-filling
+  // Form States
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [phone, setPhone] = useState("")
   const [date, setDate] = useState("")
   const [time, setTime] = useState("")
   
-  // New states for handling the chatbot pre-fill flow
+  // Chatbot Pre-fill States
   const [isPreloading, setIsPreloading] = useState(!!leadId)
   const [preloadError, setPreloadError] = useState<string | null>(null)
 
@@ -137,7 +194,6 @@ function AuthFormComponent() {
     { id: "gandhi-path", title: "SJ Fitness Gandhi Path", address: "Gandhi Path, Jaipur, Rajasthan", features: ["Premium Facilities", "Swimming Pool", "Yoga Studio", "Steam & Sauna"] },
   ]
 
-  // This effect runs only if a leadId is found in the URL to pre-fill the form
   useEffect(() => {
     if (leadId) {
       const prefillForm = async () => {
@@ -166,7 +222,6 @@ function AuthFormComponent() {
           setStep("details")
         } catch (err: any) {
           setPreloadError(err.message)
-          // Fallback to manual booking
           setStep("branch")
         } finally {
           setIsPreloading(false)
@@ -176,16 +231,21 @@ function AuthFormComponent() {
     }
   }, [leadId])
 
+  // --- Razorpay Logic ---
 
-  const handleBranchSelect = (branchId: string) => setSelectedBranch(branchId)
-  const handleContinue = () => selectedBranch && setStep("details")
+  const loadRazorpay = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement("script")
+      script.src = "https://checkout.razorpay.com/v1/checkout.js"
+      script.onload = () => resolve(true)
+      script.onerror = () => resolve(false)
+      document.body.appendChild(script)
+    })
+  }
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setIsLoading(true)
-
+  const handleFinalRegistration = async (paymentId: string) => {
     const branchName = selectedBranch === "Vaishali" ? "SJ Fitness Vaishali Nagar" : "SJ Fitness Gandhi Path"
-    const finalLeadData = { name, email, phone, branch: branchName, date, time }
+    const finalLeadData = { name, email, phone, branch: branchName, date, time, paymentId, amount: 200 }
 
     try {
       const dbRes = await fetch("/api/leads", {
@@ -196,37 +256,94 @@ function AuthFormComponent() {
 
       if (!dbRes.ok) {
         const dbErrorData = await dbRes.json()
-        throw new Error(dbErrorData?.message || "Failed to book your trial. Please try again.")
+        throw new Error(dbErrorData?.message || "Failed to save booking.")
       }
       
-      const qrData = JSON.stringify({ email, date, branch: branchName, type: "day-pass" })
-      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData)}`
+      // --- GENERATE VERIFICATION QR CODE ---
+      // FIX: FORCE THE PRODUCTION DOMAIN
+      // This ensures that even if you test on localhost, the QR code will point to the live site.
+      // REPLACE 'https://sjfitness.in' with your actual Vercel domain if different.
+      const origin = 'https://sjfitness.vercel.app'; 
+      
+      const verificationUrl = `${origin}/verify-pass?id=${paymentId}&name=${encodeURIComponent(name)}&branch=${encodeURIComponent(branchName)}&date=${date}&status=valid`;
+      
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(verificationUrl)}`
 
       await fetch("/api/email/day-pass", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...finalLeadData, qrUrl }),
+        body: JSON.stringify({ ...finalLeadData, qrUrl, paymentId }),
       })
       
-      toast({ title: "Free trial booked!", description: "We’ve emailed your 1‑day pass." })
+      toast({ title: "Payment Successful!", description: "Your 1-day pass receipt has been emailed." })
       setStep("success")
     } catch (err: any) {
-      toast({ title: "Could not complete request", description: err?.message || "Please try again.", variant: "destructive" })
+      console.error(err)
+      toast({ title: "Booking Error", description: "Payment received but booking failed. Contact support.", variant: "destructive" })
     } finally {
       setIsLoading(false)
     }
   }
 
+  const handlePayment = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    
+    if (!name || !email || !phone || !date || !time) {
+        toast({ title: "Missing Details", description: "Please fill in all fields.", variant: "destructive" })
+        return
+    }
+
+    setIsLoading(true)
+
+    const isLoaded = await loadRazorpay()
+    if (!isLoaded) {
+      toast({ title: "System Error", description: "Razorpay SDK failed to load.", variant: "destructive" })
+      setIsLoading(false)
+      return
+    }
+
+    const options = {
+      key: "rzp_test_ROhDstKLFyy0rA", 
+      amount: "20000", // 200 INR
+      currency: "INR",
+      name: "SJ Fitness",
+      description: "1-Day Trial Pass",
+      image: "/logo.png", 
+      handler: async function (response: any) {
+        await handleFinalRegistration(response.razorpay_payment_id)
+      },
+      prefill: {
+        name: name,
+        email: email,
+        contact: phone,
+      },
+      theme: {
+        color: "#ffd700",
+      },
+    }
+
+    const paymentObject = new (window as any).Razorpay(options)
+    paymentObject.open()
+    
+    paymentObject.on('payment.failed', function (response: any){
+        toast({ title: "Payment Failed", description: response.error.description, variant: "destructive" })
+        setIsLoading(false)
+    });
+  }
+
+
+  const handleBranchSelect = (branchId: string) => setSelectedBranch(branchId)
+  const handleContinue = () => selectedBranch && setStep("details")
   const handleBack = () => setStep("branch")
 
   const resetForm = () => {
     setStep("branch")
     setSelectedBranch("")
     setName(""); setEmail(""); setPhone(""); setDate(""); setTime("");
-    window.history.pushState({}, '', window.location.pathname);
+    if(typeof window !== 'undefined') {
+      window.history.pushState({}, '', window.location.pathname);
+    }
   }
-
-  // --- Main Render Logic ---
 
   if (isPreloading) {
     return (
@@ -245,8 +362,8 @@ function AuthFormComponent() {
             <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.1, type: "spring", stiffness: 200 }} className="flex justify-center mb-6">
               <Image src="/logo.png" alt="SJ Fitness Logo" width={80} height={80} className="rounded-full" />
             </motion.div>
-            <motion.h1 className="text-3xl font-bold text-foreground mb-2" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>Get Your Free Trial</motion.h1>
-            <motion.p className="text-muted-foreground" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>Choose your preferred SJ Fitness location for a 1-day free trial</motion.p>
+            <motion.h1 className="text-3xl font-bold text-foreground mb-2" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>Get Your Trial Pass</motion.h1>
+            <motion.p className="text-muted-foreground" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>Choose your preferred SJ Fitness location for a 1-day pass</motion.p>
              {preloadError && (
                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1}} className="mt-4 bg-destructive/10 border border-destructive/20 text-destructive text-sm p-3 rounded-lg flex items-center justify-center space-x-2">
                      <AlertTriangle className="w-4 h-4" />
@@ -275,11 +392,12 @@ function AuthFormComponent() {
             </motion.div>
             <motion.h1 className="text-3xl font-bold text-foreground mb-2" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>Almost There!</motion.h1>
             <motion.p className="text-muted-foreground" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
-              Confirm your details for a free trial at{" "}
+              Confirm your details for a trial pass at{" "}
               <span className="text-brand-yellow font-medium">{selectedBranch === "Vaishali" ? "SJ Fitness Vaishali Nagar" : "SJ Fitness Gandhi Path"}</span>
             </motion.p>
           </div>
-          <form onSubmit={handleSubmit} className="space-y-6">
+          
+          <form onSubmit={handlePayment} className="space-y-6">
             <InputField icon={User} type="text" placeholder="Full Name" id="name" value={name} onChange={(e) => setName(e.target.value)} />
             <InputField icon={Mail} type="email" placeholder="Email Address" id="email" value={email} onChange={(e) => setEmail(e.target.value)} />
             <InputField icon={Phone} type="tel" placeholder="Phone Number" id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
@@ -290,30 +408,37 @@ function AuthFormComponent() {
               </div>
               <p className="text-xs text-muted-foreground mt-2 ml-1">Preferred trial date</p>
             </motion.div>
+            
+            {/* Custom Hover Dropdown */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-              <div className="relative flex items-center group">
-                <Clock className="absolute left-4 w-5 h-5 text-muted-foreground group-focus-within:text-brand-yellow transition-colors duration-200" />
-                <select id="preferred-time" name="preferred-time" required value={time} onChange={(e) => setTime(e.target.value)} className={`w-full bg-input border border-input rounded-lg py-4 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-brand-yellow/50 focus:border-brand-yellow transition-all duration-200 hover:border-input/80 ${time ? 'text-foreground' : 'text-muted-foreground'}`}>
-                  <option value="" disabled>Select preferred time</option>
-                  <option value="morning" className="text-foreground bg-background">Morning (6:00 AM - 10:00 AM)</option>
-                  <option value="afternoon" className="text-foreground bg-background">Afternoon (10:00 AM - 4:00 PM)</option>
-                  <option value="evening" className="text-foreground bg-background">Evening (4:00 PM - 10:00 PM)</option>
-                </select>
-              </div>
+              <HoverTimeSelect value={time} onChange={setTime} />
             </motion.div>
-            <div className="flex space-x-4 pt-4">
-              <motion.button type="button" onClick={handleBack} className="flex-1 bg-secondary text-secondary-foreground font-medium py-4 px-6 rounded-lg hover:bg-secondary/80 transition-colors duration-200" whileTap={{ scale: 0.98 }}>Back</motion.button>
-              <motion.button type="submit" disabled={isLoading} className="flex-1 bg-brand-yellow text-black font-semibold py-4 px-6 rounded-lg hover:bg-yellow-400 transition-colors duration-200 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:bg-brand-yellow" whileTap={{ scale: 0.98 }}>
-                <AnimatePresence mode="wait">
-                  {isLoading ? (
-                    <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center justify-center">
-                      <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin mr-2" />Processing...
-                    </motion.div>
-                  ) : (
-                    <motion.div key="text" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center justify-center">Claim Free Trial<ArrowRight className="ml-2 w-5 h-5" /></motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.button>
+            
+            <div className="pt-2">
+                 <p className="text-sm text-center mb-3 text-muted-foreground">
+                    You have to pay <span className="text-brand-yellow font-bold">₹200</span> to claim this trial pass
+                 </p>
+                <div className="flex space-x-4">
+                  <motion.button type="button" onClick={handleBack} className="flex-1 bg-secondary text-secondary-foreground font-medium py-4 px-6 rounded-lg hover:bg-secondary/80 transition-colors duration-200" whileTap={{ scale: 0.98 }}>Back</motion.button>
+                  
+                  <motion.button type="submit" disabled={isLoading} className="flex-1 bg-brand-yellow text-black font-semibold py-4 px-6 rounded-lg hover:bg-yellow-400 transition-colors duration-200 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:bg-brand-yellow shadow-[0_0_20px_rgba(255,215,0,0.2)]" whileTap={{ scale: 0.98 }}>
+                    <AnimatePresence mode="wait">
+                      {isLoading ? (
+                        <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center justify-center">
+                          <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin mr-2" />Processing...
+                        </motion.div>
+                      ) : (
+                        <motion.div key="text" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center justify-center">
+                            <Lock className="w-4 h-4 mr-2 opacity-75" />
+                            <span>Pay & Claim</span>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.button>
+                </div>
+                <p className="text-center text-xs text-muted-foreground mt-4 flex items-center justify-center gap-1">
+                    <CreditCard className="w-3 h-3" /> Secure payment via Razorpay
+                </p>
             </div>
           </form>
         </motion.div>
@@ -324,20 +449,18 @@ function AuthFormComponent() {
           <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.1, type: "spring", stiffness: 200 }} className="flex justify-center mb-6">
             <CheckCircle className="w-20 h-20 text-brand-yellow" />
           </motion.div>
-          <motion.h1 className="text-3xl font-bold text-foreground mb-4" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>Trial Booked Successfully!</motion.h1>
+          <motion.h1 className="text-3xl font-bold text-foreground mb-4" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>Payment Successful!</motion.h1>
           <motion.div className="bg-muted rounded-lg p-6 mb-8" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-            <p className="text-muted-foreground mb-4">Your free trial has been confirmed. We’ve sent details to your email.</p>
+            <p className="text-muted-foreground mb-4">Your trial pass has been confirmed. We’ve sent your receipt to your email.</p>
+            <div className="text-sm font-medium text-brand-yellow bg-brand-yellow/10 py-2 rounded">Amount Paid: ₹200.00</div>
           </motion.div> 
-          <motion.button type="button" onClick={resetForm} className="bg-brand-yellow text-black font-semibold py-4 px-8 rounded-lg hover:bg-yellow-400 transition-colors duration-200" whileTap={{ scale: 0.98 }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>Book Another Trial</motion.button>
+          <motion.button type="button" onClick={resetForm} className="bg-brand-yellow text-black font-semibold py-4 px-8 rounded-lg hover:bg-yellow-400 transition-colors duration-200" whileTap={{ scale: 0.98 }} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>Book Another</motion.button>
         </motion.div>
       )}
     </AnimatePresence>
   )
 }
 
-
-// This wrapper component is required by Next.js when using `useSearchParams`.
-// It provides a "Suspense Boundary" which shows a fallback UI while the page is loading.
 export default function AuthForm() {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-background relative">
@@ -358,4 +481,3 @@ export default function AuthForm() {
       </div>
     )
 }
-
