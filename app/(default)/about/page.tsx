@@ -22,11 +22,6 @@ const trainers = [
     img: "/sjfitness_images/trainer3.jpg",
     bio: "6+ years of experience as a strength training expert transforming lives.",
   },
-  {
-    role: "Personal Trainer",
-    img: "/sjfitness_images/trainer4.jpg",
-    bio: "2+ years of experience as a strength training expert transforming lives.",
-  },
 ]
 
 const stats = [

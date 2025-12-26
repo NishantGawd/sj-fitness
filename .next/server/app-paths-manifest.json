@@ -1,9 +1,8 @@
 {
-  "/join/page": "app/join/page.js",
-  "/api/leads/route": "app/api/leads/route.js",
-  "/api/email/day-pass/route": "app/api/email/day-pass/route.js",
   "/(default)/page": "app/(default)/page.js",
-  "/(default)/membership/page": "app/(default)/membership/page.js",
+  "/(default)/about/page": "app/(default)/about/page.js",
   "/(default)/classes/page": "app/(default)/classes/page.js",
-  "/(default)/payment/page": "app/(default)/payment/page.js"
+  "/(default)/membership/page": "app/(default)/membership/page.js",
+  "/(default)/contact/page": "app/(default)/contact/page.js",
+  "/(default)/services/strength/page": "app/(default)/services/strength/page.js"
 }

@@ -21,13 +21,13 @@ function cfg(duration: "1m" | "3m" | "6m" | "12m"): PlanCfg {
       return { amount: 300000, label: "1 Month Membership", period: "monthly", interval: 1, total_count: 1 }
     case "3m":
       // Billed every 3 months, for 1 cycle total.
-      return { amount: 600000, label: "3 Month Membership", period: "monthly", interval: 3, total_count: 1 }
+      return { amount: 650000, label: "3 Month Membership", period: "monthly", interval: 3, total_count: 1 }
     case "6m":
       // Billed every 6 months, for 1 cycle total.
       return { amount: 900000, label: "6 Month Membership", period: "monthly", interval: 6, total_count: 1 }
     case "12m":
       // Billed every 12 months (yearly), for 1 cycle total.
-      return { amount: 1300000, label: "1 Year Membership", period: "monthly", interval: 12, total_count: 1 }
+      return { amount: 1350000, label: "1 Year Membership", period: "monthly", interval: 12, total_count: 1 }
   }
 }
 

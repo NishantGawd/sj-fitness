@@ -35,9 +35,9 @@ async function loadRazorpay(): Promise<boolean> {
 
 const plans = [
   { id: "1m", name: "1 Month", price: "3000", description: "Perfect to get started" },
-  { id: "3m", name: "3 Months", price: "6000", description: "Commit to consistency" },
+  { id: "3m", name: "3 Months", price: "6500", description: "Commit to consistency" },
   { id: "6m", name: "6 Months", price: "9000", description: "Best value mid-term" },
-  { id: "12m", name: "1 Year", price: "13000", description: "Ultimate commitment" },
+  { id: "12m", name: "1 Year", price: "13500", description: "Ultimate commitment" },
 ] as const
 
 type PlanId = (typeof plans)[number]["id"]

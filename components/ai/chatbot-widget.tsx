@@ -44,22 +44,22 @@ const bookingQuestions = [
 // ----------------------- Intent detection (client-side with delay) -----------------------
 const TEMPLATES: Record<string, string> = {
   // Goals
-  "bulking": `<p>Nice — bulking season! 💪<br><b>Workouts:</b> Stick to 3–5 heavy strength sessions weekly with compound lifts like squats, presses, and rows.<br><b>Nutrition:</b> Eat in a small calorie surplus with high protein and balanced carbs to fuel recovery.<br><b>Pro Tip:</b> Track progress and avoid overdoing the surplus — clean bulk beats dirty bulk!</p>`,
-  "fat loss": `<p>Smart choice! Fat loss comes from a steady calorie deficit and smart training.<br><b>Workouts:</b> Combine 3 strength sessions and 2 cardio sessions weekly.<br><b>Nutrition:</b> High-protein, whole foods help you stay full and energized.<br><b>Pro Tip:</b> Don’t rush it — steady progress lasts longer!</p>`,
-  "maintenance": `<p>Awesome! Maintenance means balance — consistency over intensity.<br>Keep 2–3 strength sessions and 1–2 light cardio days weekly, and eat around your daily needs.<br><b>Pro Tip:</b> Mix things up sometimes to stay fresh and motivated!</p>`,
-  "cutting": `<p>Cutting done right = keeping muscle while losing fat.<br><b>Training:</b> Strength 3–4x/week + cardio.<br><b>Nutrition:</b> Small calorie deficit with high protein.<br><b>Pro Tip:</b> Don’t over-restrict; sustainability is key.</p>`,
-  "muscle gain": `<p>Perfect — muscle gain starts with progressive overload and nutrition.<br><b>Train:</b> Focus on compound lifts and progressive overload 3–5x/week.<br><b>Eat:</b> Slight surplus + protein-rich meals to repair and grow muscle.<br><b>Pro Tip:</b> Rest and sleep matter as much as lifting!</p>`,
+  "bulking": `<p><b>Nice — bulking season! 💪</b></p><ul><li><b>Workouts:</b> 3–5 heavy strength sessions weekly. Focus on compound lifts (Squats, Presses, Rows).</li><li><b>Nutrition:</b> Eat in a small calorie surplus with high protein.</li></ul><p><i>Pro Tip: Clean bulk beats dirty bulk!</i></p>`,
+  "fat loss": `<p><b>Smart choice! Fat loss = Calorie Deficit + Smart Training.</b></p><ul><li><b>Workouts:</b> Mix strength (3x/week) and cardio (2x/week).</li><li><b>Nutrition:</b> High-protein, whole foods to stay full.</li></ul><p><i>Pro Tip: Don’t rush it — steady progress lasts longer!</i></p>`,
+  "maintenance": `<p><b>Awesome! Maintenance is about balance.</b></p><ul><li><b>Routine:</b> 2–3 strength sessions + 1–2 light cardio days.</li><li><b>Nutrition:</b> Eat around your daily calorie maintenance level.</li></ul><p><i>Pro Tip: Mix things up to stay motivated!</i></p>`,
+  "cutting": `<p><b>Cutting done right preserves muscle.</b></p><ul><li><b>Training:</b> Keep lifting heavy (3–4x/week) to signal muscle retention.</li><li><b>Nutrition:</b> Slight calorie deficit, high protein.</li></ul><p><i>Pro Tip: Sustainability is key.</i></p>`,
+  "muscle gain": `<p><b>Let's build that muscle!</b></p><ul><li><b>Train:</b> Progressive overload is King. Add weight/reps gradually.</li><li><b>Eat:</b> Surplus calories + Protein (1.6g-2g per kg of bodyweight).</li><li><b>Sleep:</b> Muscles grow while you sleep, not while you lift.</li></ul>`,
 
   // Exercises
-  "chest": `<p>For chest growth: Bench Press (flat/incline), Dumbbell Press, and Push-ups.<br><b>Pro Tip:</b> Control each rep — slower negatives, stronger results.</p>`,
-  "back": `<p>For back: Pull-ups, Barbell Rows, and Seated Rows.<br><b>Pro Tip:</b> Focus on pulling with your elbows, not just your arms.</p>`,
-  "legs": `<p>Legs: Squats, Deadlifts, Lunges, and Leg Press.<br><b>Pro Tip:</b> Go for form and depth — strong legs support everything!</p>`,
-  "glutes": `<p>Glutes: Hip Thrusts, Bulgarian Split Squats, and Lunges.<br><b>Pro Tip:</b> Pause at the top and squeeze — that’s where growth happens!</p>`,
-  "shoulders": `<p>Shoulders: Overhead Press, Lateral Raises, and Rear Delt Flyes.<br><b>Pro Tip:</b> Keep movements smooth — shoulders love control, not momentum.</p>`,
-  "arms": `<p>Arms: Biceps Curls, Hammer Curls, Triceps Pushdowns, and Dips.<br><b>Pro Tip:</b> Squeeze at the top, slow on the way down for better activation.</p>`,
-  "abs": `<p>Abs/Core: Planks, Hanging Leg Raises, Cable Crunches.<br><b>Pro Tip:</b> Slow reps + focus = stronger core, faster progress.</p>`,
-  "calves": `<p>Calves: Standing and Seated Calf Raises.<br><b>Pro Tip:</b> Hold each rep at the top for 1 second — that’s the real burn.</p>`,
-  "full body": `<p>Full-Body: Squats, Bench Press, Rows, Overhead Press, Plank.<br><b>Pro Tip:</b> 2–3 sessions weekly is enough to build all-round strength.</p>`
+  "chest": `<p><b>Top Chest Exercises:</b></p><ul><li>Barbell/Dumbbell Bench Press</li><li>Incline Press (Upper Chest)</li><li>Push-ups (Finisher)</li></ul><p><i>Focus on the stretch and squeeze!</i></p>`,
+  "back": `<p><b>Build a Wide Back:</b></p><ul><li>Pull-ups (or Lat Pulldowns)</li><li>Barbell Rows</li><li>Seated Cable Rows</li></ul><p><i>Pull with your elbows, not your hands.</i></p>`,
+  "legs": `<p><b>Never Skip Leg Day!</b></p><ul><li>Squats (The King of leg exercises)</li><li>Romanian Deadlifts</li><li>Leg Press</li><li>Lunges</li></ul><p><i>Focus on depth and form.</i></p>`,
+  "glutes": `<p><b>Glute Growth Staples:</b></p><ul><li>Hip Thrusts (Heavy)</li><li>Bulgarian Split Squats</li><li>Glute Bridges</li></ul><p><i>Squeeze hard at the top of every rep.</i></p>`,
+  "shoulders": `<p><b>3D Shoulders Routine:</b></p><ul><li>Overhead Press (Strength)</li><li>Lateral Raises (Width)</li><li>Face Pulls (Rear Delts/Health)</li></ul>`,
+  "arms": `<p><b>Arm Farm:</b></p><ul><li><b>Biceps:</b> Barbell Curls, Hammer Curls</li><li><b>Triceps:</b> Rope Pushdowns, Skullcrushers</li></ul><p><i>Control the weight on the way down.</i></p>`,
+  "abs": `<p><b>Core Strength:</b></p><ul><li>Planks</li><li>Hanging Leg Raises</li><li>Cable Crunches</li></ul><p><i>Your core stabilizes your whole body.</i></p>`,
+  "calves": `<p><b>Calf Training:</b></p><ul><li>Standing Calf Raises</li><li>Seated Calf Raises</li></ul><p><i>Pause at the bottom for a deep stretch.</i></p>`,
+  "full body": `<p><b>Efficient Full Body Routine:</b></p><ul><li><b>Squat</b> variant</li><li><b>Push:</b> Bench or Overhead Press</li><li><b>Pull:</b> Row or Pull-up</li><li><b>Hinge:</b> Deadlift variant</li></ul><p><i>Do this 2-3 times a week.</i></p>`
 };
 
 // Detect fitness or exercise intent keywords

@@ -184,7 +184,7 @@ export default function ContactPage() {
                     <Mail className="text-brand-yellow w-6 h-6 mt-1 flex-shrink-0" />
                     <div>
                       <h3 className="font-semibold text-lg">Email</h3>
-                      <p className="text-muted-foreground">hello@sjfitness.com</p>
+                      <p className="text-muted-foreground">sjfitness49@gmail.com</p>
                     </div>
                   </motion.div>
                 </div>
