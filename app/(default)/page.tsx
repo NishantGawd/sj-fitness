@@ -24,17 +24,17 @@ type VideoTestimonial = {
 }
 
 const videoTestimonials: VideoTestimonial[] = [
-  { src: "/sjfitness_videos/testimonials/1.mp4", poster: "/sjfitness_videos/testimonials/1.jpg", name: "Yatharth Sharma" },
-  { src: "/sjfitness_videos/testimonials/2.mp4", poster: "/sjfitness_videos/testimonials/2.jpg", name: "Vinay Sharma" },
-  { src: "/sjfitness_videos/testimonials/3.mp4", poster: "/sjfitness_videos/testimonials/3.jpg", name: "Kavya Gupta" },
-  { src: "/sjfitness_videos/testimonials/4.mp4", poster: "/sjfitness_videos/testimonials/4.jpg", name: "Rawat Dewani" },
-  { src: "/sjfitness_videos/testimonials/5.mp4", poster: "/sjfitness_videos/testimonials/5.jpg", name: "Anil Sharma & Priyanka Sharma" },
-  { src: "/sjfitness_videos/testimonials/6.mp4", poster: "/sjfitness_videos/testimonials/6.jpg", name: "Sachit" },
-  { src: "/sjfitness_videos/testimonials/7.mp4", poster: "/sjfitness_videos/testimonials/7.jpg", name: "Yukta" },
-  { src: "/sjfitness_videos/testimonials/8.mp4", poster: "/sjfitness_videos/testimonials/8.jpg", name: "Yash" },
-  { src: "/sjfitness_videos/testimonials/9.mp4", poster: "/sjfitness_videos/testimonials/9.png", name: "Yash" },
-  { src: "/sjfitness_videos/testimonials/10.mp4", poster: "/sjfitness_videos/testimonials/10.png", name: "Yash" },
-  { src: "/sjfitness_videos/testimonials/11.mp4", poster: "/sjfitness_videos/testimonials/11.png", name: "Yash" },
+  { src: "/sjfitness_videos/testimonials/1.mp4", poster: "/sjfitness_videos/testimonials/1.jpg", name: "" },
+  { src: "/sjfitness_videos/testimonials/2.mp4", poster: "/sjfitness_videos/testimonials/2.jpg", name: "" },
+  { src: "/sjfitness_videos/testimonials/3.mp4", poster: "/sjfitness_videos/testimonials/3.jpg", name: "" },
+  { src: "/sjfitness_videos/testimonials/4.mp4", poster: "/sjfitness_videos/testimonials/4.jpg", name: "" },
+  { src: "/sjfitness_videos/testimonials/5.mp4", poster: "/sjfitness_videos/testimonials/5.jpg", name: "" },
+  { src: "/sjfitness_videos/testimonials/6.mp4", poster: "/sjfitness_videos/testimonials/6.jpg", name: "" },
+  { src: "/sjfitness_videos/testimonials/7.mp4", poster: "/sjfitness_videos/testimonials/7.jpg", name: "" },
+  { src: "/sjfitness_videos/testimonials/8.mp4", poster: "/sjfitness_videos/testimonials/8.jpg", name: "" },
+  { src: "/sjfitness_videos/testimonials/9.mp4", poster: "/sjfitness_videos/testimonials/9.png", name: "" },
+  { src: "/sjfitness_videos/testimonials/10.mp4", poster: "/sjfitness_videos/testimonials/10.png", name: "" },
+  { src: "/sjfitness_videos/testimonials/11.mp4", poster: "/sjfitness_videos/testimonials/11.png", name: "" },
 ]
 
 // --- Helper function for classnames ---
